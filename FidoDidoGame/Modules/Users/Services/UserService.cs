@@ -10,6 +10,8 @@ namespace FidoDidoGame.Modules.Users.Services
         void Create(CreateUserRequest request);
         void Update(int userId, UpdateUserRequest request);
         void CreateStatus(List<string> statusName);
+        void AddUserStatus(int userId, int statusId);
+        void DeleteUserStatus(int userId, int statusId);
         User Profile(int userId);
     }
     public class UserService : IUserService
@@ -22,6 +24,12 @@ namespace FidoDidoGame.Modules.Users.Services
             this.mapper = mapper;
         }
 
+        public void AddUserStatus(int userId, int statusId)
+        {
+            repository.UserStatus.Create(new UserStatus { UserId = userId, StatusId = statusId });
+            repository.Save();
+        }
+
         public void Create(CreateUserRequest request)
         {
             repository.User.Create(mapper.Map<CreateUserRequest, User>(request));
@@ -32,6 +40,12 @@ namespace FidoDidoGame.Modules.Users.Services
         {
             List<Status> status = statusName.Select(x => new Status { Name = x }).ToList();
             repository.Status.CreateMulti(status);
+            repository.Save();
+        }
+
+        public void DeleteUserStatus(int userId, int statusId)
+        {
+            repository.UserStatus.Delete(new UserStatus { UserId = userId, StatusId = statusId });
             repository.Save();
         }
 

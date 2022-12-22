@@ -1,0 +1,5 @@
+!!!!!!!!! status null la binh thuong
+!!!!!!!!! service xai transient thay vi scopes
+
+dung redis cache lai bang Fido de lay ra xai cho nhanh
+
