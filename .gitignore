@@ -1,0 +1,6 @@
+# Build results
+FidoDidoGame/[Bb]in/
+FidoDidoGame/[Oo]bj/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
