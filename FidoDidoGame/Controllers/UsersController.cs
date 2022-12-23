@@ -33,7 +33,7 @@ namespace FidoDidoGame.Controllers
             return Ok();
         }
         [HttpGet("Profile/{userId}")]
-        public IActionResult Profile([FromRoute] int userId)
+        public IActionResult Profile([FromRoute] int userId, [FromQuery] ProfilesRequest request)
         {
             return Ok(service.Profile(userId));
         }

@@ -16,7 +16,6 @@ namespace FidoDidoGame.Persistents.Repositories
         IFidoDidoRepository FidoDido { get; }
         IPointOfDayRepository PointOfDay { get; }
         IPointDetailRepository PointDetail { get; }
-        void Save();
     }
     public interface IUserRepository : IRepositoryBase<User> { }
     public interface IStatusRepository : IRepositoryBase<Status> { }
@@ -35,14 +34,14 @@ namespace FidoDidoGame.Persistents.Repositories
             this.context = context;
         }
 
-        private IUserRepository user;
-        private IStatusRepository status;
-        private IUserStatusRepository userStatus;
-        private IFidoRepository fido;
-        private IDidoRepository dido;
-        private IFidoDidoRepository fidoDido;
-        private IPointOfDayRepository pointOfDay;
-        private IPointDetailRepository pointDetail;
+        private IUserRepository? user;
+        private IStatusRepository? status;
+        private IUserStatusRepository? userStatus;
+        private IFidoRepository? fido;
+        private IDidoRepository? dido;
+        private IFidoDidoRepository? fidoDido;
+        private IPointOfDayRepository? pointOfDay;
+        private IPointDetailRepository? pointDetail;
         public IUserRepository User
         {
             get
@@ -138,8 +137,6 @@ namespace FidoDidoGame.Persistents.Repositories
                 return pointDetail;
             }
         }
-
-        public void Save() => context.SaveChanges();
     }
     public class UserRepository : RepositoryBase<User>, IUserRepository
     {

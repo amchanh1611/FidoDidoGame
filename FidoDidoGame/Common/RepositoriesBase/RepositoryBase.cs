@@ -1,5 +1,6 @@
 ﻿using FidoDidoGame.Persistents.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Expressions;
 
 namespace FidoDidoGame.Common.RepositoriesBase
@@ -11,8 +12,10 @@ namespace FidoDidoGame.Common.RepositoriesBase
         void Delete(T entity);
         void CreateMulti(List<T> entities);
         void DeleteMulti(List<T> entities);
+        void Save();
         IQueryable<T> FindAll();
         IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression);
+        IDbContextTransaction Transaction();
     }
     public class RepositoryBase<T> : IRepositoryBase<T> where T : class
     {
@@ -35,6 +38,10 @@ namespace FidoDidoGame.Common.RepositoriesBase
         public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => context.Set<T>().Where(expression).AsNoTracking();
 
         public T Update(T entity) => context.Set<T>().Update(entity).Entity;
+
+        public IDbContextTransaction Transaction() => context.Database.BeginTransaction();
+
+        public void Save() => context.SaveChanges();
     }
 
 }

@@ -1,5 +1,15 @@
-!!!!!!!!! status null la binh thuong
 !!!!!!!!! service xai transient thay vi scopes
+
+!!!!!!!!! dem savechange & transaction vao repositoryBase khong de o RepositoryWrapper nua de sau nay dem di khong can viet lai
+
+!!!!!!!!! validate Profile Request neu truyen vao userId khong ton tai
+
+???? phai map tay moi keim tra phan tram hoan toan duoc
 
 dung redis cache lai bang Fido de lay ra xai cho nhanh
 
+
+Id	number	percent
+1	10	10
+2	10	20
+3	20	40

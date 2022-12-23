@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 22, 2022 at 04:17 PM
+-- Generation Time: Dec 23, 2022 at 07:57 AM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -55,17 +55,18 @@ INSERT INTO `dido` (`Id`, `Name`) VALUES
 CREATE TABLE `fido` (
   `Id` int(11) NOT NULL,
   `Name` text NOT NULL,
-  `Percent` int(11) NOT NULL DEFAULT 0
+  `Percent` int(11) NOT NULL,
+  `PercentRand` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `fido`
 --
 
-INSERT INTO `fido` (`Id`, `Name`, `Percent`) VALUES
-(1, 'BigFido', 20),
-(2, 'MediumFido', 30),
-(3, 'SmallFido', 50);
+INSERT INTO `fido` (`Id`, `Name`, `Percent`, `PercentRand`) VALUES
+(1, 'BigFido', 20, 20),
+(2, 'MediumFido', 30, 50),
+(3, 'SmallFido', 50, 100);
 
 -- --------------------------------------------------------
 
@@ -77,29 +78,30 @@ CREATE TABLE `fido_dido` (
   `FidoId` int(11) NOT NULL,
   `DidoId` int(11) NOT NULL,
   `Percent` int(11) NOT NULL,
-  `Point` char(9) NOT NULL
+  `Point` char(9) NOT NULL,
+  `PercentRand` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `fido_dido`
 --
 
-INSERT INTO `fido_dido` (`FidoId`, `DidoId`, `Percent`, `Point`) VALUES
-(1, 1, 20, '777'),
-(1, 2, 25, '390'),
-(1, 3, 30, '200'),
-(1, 4, 5, 'x2'),
-(1, 5, 5, 'auto'),
-(1, 6, 5, 'heal'),
-(1, 7, 10, 'ban'),
-(2, 2, 35, '390'),
-(2, 3, 45, '200'),
-(2, 4, 5, 'x2'),
-(2, 5, 5, 'auto'),
-(2, 7, 10, 'ban'),
-(3, 3, 65, '200'),
-(3, 4, 10, 'x2'),
-(3, 8, 25, '390');
+INSERT INTO `fido_dido` (`FidoId`, `DidoId`, `Percent`, `Point`, `PercentRand`) VALUES
+(1, 1, 20, '777', 20),
+(1, 2, 25, '390', 45),
+(1, 3, 10, '200', 75),
+(1, 4, 5, 'x2', 80),
+(1, 5, 5, 'auto', 85),
+(1, 6, 5, 'heal', 90),
+(1, 7, 10, 'ban', 100),
+(2, 2, 35, '390', 35),
+(2, 3, 45, '200', 80),
+(2, 4, 5, 'x2', 85),
+(2, 5, 5, 'auto', 90),
+(2, 7, 10, 'ban', 100),
+(3, 3, 65, '200', 65),
+(3, 4, 10, 'x2', 75),
+(3, 8, 25, '390', 100);
 
 -- --------------------------------------------------------
 
@@ -134,19 +136,19 @@ CREATE TABLE `point_of_day` (
 --
 
 CREATE TABLE `status` (
-  `Id` int(11) NOT NULL,
-  `Name` text NOT NULL
+  `StatusCode` char(9) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `status`
 --
 
-INSERT INTO `status` (`Id`, `Name`) VALUES
-(1, 'x2'),
-(2, 'auto'),
-(3, 'heal'),
-(4, 'ban');
+INSERT INTO `status` (`StatusCode`) VALUES
+('auto'),
+('ban'),
+('heal'),
+('normal'),
+('x2');
 
 -- --------------------------------------------------------
 
@@ -170,7 +172,9 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `Male`, `Avatar`, `FidoId`) VALUES
-(1, 'MinhChanh', 'Chanh', NULL, NULL, 0, NULL, NULL);
+(1, 'MinhChanh', 'Chanh', NULL, NULL, 0, NULL, NULL),
+(2, 'Chanh', 'ChanhAu', NULL, NULL, NULL, NULL, 3),
+(3, 'ChanhMinh', 'Minh', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -180,8 +184,17 @@ INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `Male`, `Avata
 
 CREATE TABLE `user_status` (
   `UserId` int(11) NOT NULL,
-  `StatusId` int(11) NOT NULL
+  `StatusCode` char(9) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `user_status`
+--
+
+INSERT INTO `user_status` (`UserId`, `StatusCode`) VALUES
+(1, 'normal'),
+(2, 'normal'),
+(3, 'normal');
 
 -- --------------------------------------------------------
 
@@ -201,7 +214,9 @@ CREATE TABLE `__efmigrationshistory` (
 INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
 ('20221222074949_FirstTimeCreateModels', '6.0.11'),
 ('20221222085502_ChangeTypeofPointToString', '6.0.11'),
-('20221222151030_AddPercentToFido', '6.0.11');
+('20221222151030_AddPercentToFido', '6.0.11'),
+('20221223023545_EditStructureDatabase', '6.0.11'),
+('20221223051005_AddPercentRandToModel', '6.0.11');
 
 --
 -- Indexes for dumped tables
@@ -244,7 +259,7 @@ ALTER TABLE `point_of_day`
 -- Indexes for table `status`
 --
 ALTER TABLE `status`
-  ADD PRIMARY KEY (`Id`);
+  ADD PRIMARY KEY (`StatusCode`);
 
 --
 -- Indexes for table `user`
@@ -257,8 +272,8 @@ ALTER TABLE `user`
 -- Indexes for table `user_status`
 --
 ALTER TABLE `user_status`
-  ADD PRIMARY KEY (`UserId`,`StatusId`),
-  ADD KEY `IX_user_status_StatusId` (`StatusId`);
+  ADD PRIMARY KEY (`UserId`,`StatusCode`),
+  ADD KEY `IX_user_status_StatusCode` (`StatusCode`);
 
 --
 -- Indexes for table `__efmigrationshistory`
@@ -295,16 +310,10 @@ ALTER TABLE `point_of_day`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `status`
---
-ALTER TABLE `status`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -339,7 +348,7 @@ ALTER TABLE `user`
 -- Constraints for table `user_status`
 --
 ALTER TABLE `user_status`
-  ADD CONSTRAINT `FK_user_status_status_StatusId` FOREIGN KEY (`StatusId`) REFERENCES `status` (`Id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `FK_user_status_status_StatusCode` FOREIGN KEY (`StatusCode`) REFERENCES `status` (`StatusCode`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_user_status_user_UserId` FOREIGN KEY (`UserId`) REFERENCES `user` (`Id`) ON DELETE CASCADE;
 COMMIT;
 

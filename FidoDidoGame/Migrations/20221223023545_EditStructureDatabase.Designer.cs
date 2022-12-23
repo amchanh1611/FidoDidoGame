@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidoDidoGame.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221222085502_ChangeTypeofPointToString")]
-    partial class ChangeTypeofPointToString
+    [Migration("20221223023545_EditStructureDatabase")]
+    partial class EditStructureDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -45,6 +45,9 @@ namespace FidoDidoGame.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Percent")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -119,15 +122,10 @@ namespace FidoDidoGame.Migrations
 
             modelBuilder.Entity("FidoDidoGame.Modules.Users.Entities.Status", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("StatusCode")
+                        .HasColumnType("char(9)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
+                    b.HasKey("StatusCode");
 
                     b.ToTable("status", (string)null);
                 });
@@ -142,13 +140,12 @@ namespace FidoDidoGame.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Avatar")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int?>("FidoId")
                         .HasColumnType("int");
 
-                    b.Property<sbyte>("Male")
+                    b.Property<sbyte?>("Male")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("Name")
@@ -174,12 +171,12 @@ namespace FidoDidoGame.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
+                    b.Property<string>("StatusCode")
+                        .HasColumnType("char(9)");
 
-                    b.HasKey("UserId", "StatusId");
+                    b.HasKey("UserId", "StatusCode");
 
-                    b.HasIndex("StatusId");
+                    b.HasIndex("StatusCode");
 
                     b.ToTable("user_status", (string)null);
                 });
@@ -238,7 +235,7 @@ namespace FidoDidoGame.Migrations
                 {
                     b.HasOne("FidoDidoGame.Modules.Users.Entities.Status", "Status")
                         .WithMany("UserStatus")
-                        .HasForeignKey("StatusId")
+                        .HasForeignKey("StatusCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

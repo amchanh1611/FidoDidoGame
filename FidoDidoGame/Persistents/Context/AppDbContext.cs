@@ -28,20 +28,20 @@ namespace FidoDidoGame.Persistents.Context
             modelBuilder.Entity<Status>(builder =>
             {
                 builder.ToTable(nameof(Status).Underscore());
-                builder.HasKey(x => x.Id);
-                builder.Property(x => x.Name).HasColumnType("text");
+                builder.HasKey(x => x.StatusCode);
+                builder.Property(x => x.StatusCode).HasColumnType("char(9)");
 
             });
             modelBuilder.Entity<UserStatus>(builder =>
             {
                 builder.ToTable(nameof(UserStatus).Underscore());
-                builder.HasKey(x => new { x.UserId, x.StatusId });
+                builder.HasKey(x => new { x.UserId, x.StatusCode });
                 builder.HasOne(x => x.User)
                 .WithMany(x => x.UserStatus)
                 .HasForeignKey(x => x.UserId);
                 builder.HasOne(x => x.Status)
                 .WithMany(x => x.UserStatus)
-                .HasForeignKey(x => x.StatusId);
+                .HasForeignKey(x => x.StatusCode);
             });
             modelBuilder.Entity<Fido>(builder =>
             {

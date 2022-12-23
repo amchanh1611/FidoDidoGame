@@ -1,7 +1,10 @@
+using AutoMapper;
 using FidoDidoGame.Mapping;
+using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Service;
 using FidoDidoGame.Modules.Users.Services;
 using FidoDidoGame.Persistents.Context;
+using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -37,12 +40,19 @@ builder.Services.AddHangfire
         new MySqlStorageOptions())));
 builder.Services.AddHangfireServer(options => configure.GetSection("HangfireSettings:Server").Bind(options));
 
+//HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
 
 //Repository
 builder.Services.AddScoped<IRepository, Repository>();
 
 //AutoMapper
-builder.Services.AddAutoMapper(typeof(Profiles));
+//builder.Services.AddAutoMapper(typeof(Profiles));
+builder.Services.AddScoped(provider => new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile(new Profiles(provider.GetService<IRepository>()!));
+}).CreateMapper());
 
 //Fluent Validation
 builder.Services.AddFluentValidationAutoValidation()
@@ -52,6 +62,7 @@ builder.Services.AddFluentValidationAutoValidation()
 //Services
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IFidoDidoService, FidoDidoService>();
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 var app = builder.Build();
 
@@ -61,6 +72,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//ErorHandlerMiddleware
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 

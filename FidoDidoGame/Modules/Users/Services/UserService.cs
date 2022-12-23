@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Request;
 using FidoDidoGame.Persistents.Repositories;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FidoDidoGame.Modules.Users.Services
 {
@@ -10,8 +12,8 @@ namespace FidoDidoGame.Modules.Users.Services
         void Create(CreateUserRequest request);
         void Update(int userId, UpdateUserRequest request);
         void CreateStatus(List<string> statusName);
-        void AddUserStatus(int userId, int statusId);
-        void DeleteUserStatus(int userId, int statusId);
+        void AddUserStatus(int userId, string statusCode);
+        void DeleteUserStatus(int userId, string statusCode);
         User Profile(int userId);
     }
     public class UserService : IUserService
@@ -24,29 +26,40 @@ namespace FidoDidoGame.Modules.Users.Services
             this.mapper = mapper;
         }
 
-        public void AddUserStatus(int userId, int statusId)
+        public void AddUserStatus(int userId, string statusCode)
         {
-            repository.UserStatus.Create(new UserStatus { UserId = userId, StatusId = statusId });
-            repository.Save();
+            repository.UserStatus.Create(new UserStatus { UserId = userId, StatusCode = statusCode });
+            repository.Status.Save();
         }
 
         public void Create(CreateUserRequest request)
         {
-            repository.User.Create(mapper.Map<CreateUserRequest, User>(request));
-            repository.Save();
+            using IDbContextTransaction transaction = repository.User.Transaction();
+            try
+            {
+                User user = repository.User.Create(mapper.Map<CreateUserRequest, User>(request));
+                repository.User.Save();
+                AddUserStatus(user.Id, "normal");
+                transaction.Commit();
+            }
+            catch(Exception ex)
+            {
+                transaction.Rollback();
+                throw new BadRequestException("Create Fail");
+            }
         }
 
         public void CreateStatus(List<string> statusName)
         {
-            List<Status> status = statusName.Select(x => new Status { Name = x }).ToList();
+            List<Status> status = statusName.Select(x => new Status { StatusCode = x }).ToList();
             repository.Status.CreateMulti(status);
-            repository.Save();
+            repository.Status.Save();
         }
 
-        public void DeleteUserStatus(int userId, int statusId)
+        public void DeleteUserStatus(int userId, string statusCode)
         {
-            repository.UserStatus.Delete(new UserStatus { UserId = userId, StatusId = statusId });
-            repository.Save();
+            repository.UserStatus.Delete(new UserStatus { UserId = userId, StatusCode = statusCode });
+            repository.Status.Save();
         }
 
         public User Profile(int userId)
@@ -58,7 +71,7 @@ namespace FidoDidoGame.Modules.Users.Services
         {
             User? user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault();
             repository.User.Update(mapper.Map(request, user!));
-            repository.Save();
+            repository.Status.Save();
         }
     }
 }
