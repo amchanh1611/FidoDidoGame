@@ -9,8 +9,6 @@ namespace FidoDidoGame.Persistents.Repositories
     public interface IRepository
     {
         IUserRepository User { get; }
-        IStatusRepository Status { get; }
-        IUserStatusRepository UserStatus { get; }
         IFidoRepository Fido { get; }
         IDidoRepository Dido { get; }
         IFidoDidoRepository FidoDido { get; }
@@ -18,11 +16,10 @@ namespace FidoDidoGame.Persistents.Repositories
         IPointDetailRepository PointDetail { get; }
     }
     public interface IUserRepository : IRepositoryBase<User> { }
-    public interface IStatusRepository : IRepositoryBase<Status> { }
     public interface IUserStatusRepository : IRepositoryBase<UserStatus> { }
     public interface IFidoRepository : IRepositoryBase<Fido> { }
     public interface IDidoRepository : IRepositoryBase<Dido> { }
-    public interface IFidoDidoRepository : IRepositoryBase<Modules.FidoDidos.Entities.FidoDido> { }
+    public interface IFidoDidoRepository : IRepositoryBase<FidoDido> { }
     public interface IPointOfDayRepository : IRepositoryBase<PointOfDay> { }
     public interface IPointDetailRepository : IRepositoryBase<PointDetail> { }
     public class Repository : IRepository
@@ -35,8 +32,6 @@ namespace FidoDidoGame.Persistents.Repositories
         }
 
         private IUserRepository? user;
-        private IStatusRepository? status;
-        private IUserStatusRepository? userStatus;
         private IFidoRepository? fido;
         private IDidoRepository? dido;
         private IFidoDidoRepository? fidoDido;
@@ -51,30 +46,6 @@ namespace FidoDidoGame.Persistents.Repositories
                     user = new UserRepository(context);
                 }
                 return user;
-            }
-        }
-
-        public IStatusRepository Status
-        {
-            get
-            {
-                if (status is null)
-                {
-                    status = new StatusRepository(context);
-                }
-                return status;
-            }
-        }
-
-        public IUserStatusRepository UserStatus
-        {
-            get
-            {
-                if (userStatus is null)
-                {
-                    userStatus = new UserStatusRepository(context);
-                }
-                return userStatus;
             }
         }
 
@@ -143,16 +114,7 @@ namespace FidoDidoGame.Persistents.Repositories
         public UserRepository(AppDbContext context) : base(context)
         { }
     }
-    public class StatusRepository : RepositoryBase<Status>, IStatusRepository
-    {
-        public StatusRepository(AppDbContext context) : base(context)
-        { }
-    }
-    public class UserStatusRepository : RepositoryBase<UserStatus>, IUserStatusRepository
-    {
-        public UserStatusRepository(AppDbContext context) : base(context)
-        { }
-    }
+
     public class FidoRepository : RepositoryBase<Fido>, IFidoRepository
     {
         public FidoRepository(AppDbContext context) : base(context)

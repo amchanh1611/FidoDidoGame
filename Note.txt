@@ -1,12 +1,18 @@
-!!!!!!!!! service xai transient thay vi scopes
 
 !!!!!!!!! dem savechange & transaction vao repositoryBase khong de o RepositoryWrapper nua de sau nay dem di khong can viet lai
 
 !!!!!!!!! validate Profile Request neu truyen vao userId khong ton tai
 
-???? phai map tay moi keim tra phan tram hoan toan duoc
+????? Idea Đầu tiên là chia ra 3 bảng: vì gộp chung 1 bảng phải serialize/deserialize rất tốn công, còn chia ra 3 bảng thì sẽ đơn giản hơn 
+Idea thứ 2 gộp 2 bang userstatus và status vào trong 1 bảng User luôn vì chia ra sẽ tốn thêm 2 bảng : 1 bảng status ít field không đáng kể,
+nhưng bảng UserStatus thì sẽ rất lớn vì có bao nhiêu User thì sẽ có ít nhất là bao nhiêu field bên bảng UserStatus, còn có những User đồng thời
+có nhiều hơn 1 Status ???????
 
-dung redis cache lai bang Fido de lay ra xai cho nhanh
+tạo sao lưu Point là string???? vì nếu khi lưu là int ví dụ lấy số nhỏ (1 2 chẳng hạn) thì khi muốn đổi rule có point giống như point đó phải
+sửa code lại, còn nếu lưu là số âm nếu muốn đổi rule quay dô ô trừ điểm 
+
+validateFido =>  userId hop le
+validateDido =>  userId hop le
 
 
 Id	number	percent

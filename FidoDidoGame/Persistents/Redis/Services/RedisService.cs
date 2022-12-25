@@ -6,13 +6,15 @@ namespace FidoDidoGame.Persistents.Redis.Services
     public interface IRedisService
     {
         T Get<T>(string key);
-        List<T> GetAll<T>(string key);
+        List<T> GetAll<T>(string pattern);
 
         public bool Set<T>(string key, T obj, params DateTime[] expirationTime);
 
         bool Delete(string key);
 
-        List<T> ZSGet<T>(string keym, int start, int end, Order order);
+        SortedSetEntry[] ZSGet(string key, int start, int end, Order order);
+
+        double ZSIncre<T>(string key, double score, T member);
 
         bool ZSSet<T>(string key, double score, T member);
 
@@ -44,9 +46,9 @@ namespace FidoDidoGame.Persistents.Redis.Services
             return default!;
         }
 
-        public List<T> GetAll<T>(string key)
+        public List<T> GetAll<T>(string pattern)
         {
-            RedisKey[] keys = server.Keys(-1,key).ToArray();
+            RedisKey[] keys = server.Keys(pattern: pattern).ToArray();
             RedisValue[] values = db.StringGet(keys);
             return values.Select(x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
         }
@@ -71,16 +73,18 @@ namespace FidoDidoGame.Persistents.Redis.Services
             return false;
         }
 
-        public List<T> ZSGet<T>(string key, int start, int end, Order order)
+        public SortedSetEntry[] ZSGet(string key, int start, int end, Order order)
         {
             bool check = db.KeyExists(key);
             if (check)
-            {
-                RedisValue[] values = db.SortedSetRangeByRank(key, start, end, order);
-                return values.Select(x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
-            }
+                return db.SortedSetRangeByRankWithScores(key, start, end, order);
 
             return default!;
+        }
+
+        public double ZSIncre<T>(string key, double score, T member)
+        {
+            return db.SortedSetIncrement(key, JsonSerializer.Serialize(member), score);
         }
 
         public bool ZSSet<T>(string key, double score, T member)

@@ -1,4 +1,5 @@
 ﻿using FidoDidoGame.Modules.Users.Entities;
+using System.Text.Json.Serialization;
 
 namespace FidoDidoGame.Modules.FidoDidos.Entities
 {

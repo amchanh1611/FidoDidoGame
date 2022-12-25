@@ -63,16 +63,16 @@ namespace FidoDidoGame.Middleware
 
                 switch (error)
                 {
-                    case UnauthorizedException exception:
+                    case UnauthorizedException:
                         // custom Unauthorized error
                         response.StatusCode = (int)HttpStatusCode.Unauthorized;
                         break;
 
-                    case BadRequestException ex:
+                    case BadRequestException:
                         // custom BadRequest error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
-                    case KeyNotFoundException e:
+                    case KeyNotFoundException:
                         // not found error
                         response.StatusCode = (int)HttpStatusCode.NotFound;
                         break;

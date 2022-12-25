@@ -19,7 +19,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
     {
         public string? Name { get; set; }
     }
-    public class UpdatePercentFidoRequest : CreateOrUpdateFido { }
+    public class UpdateFidoPercentRequest : CreateOrUpdateFido { }
     public class CreateFidoDidoValidator : AbstractValidator<CreateFidoDidoRequest>
     {
         public CreateFidoDidoValidator(IRepository repository)
@@ -65,7 +65,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
             RuleFor(x => x).SetValidator(new CreateOrUpdateFidoValidator(repository));
         }
     }
-    public class UpdatePercentFidoValidator : AbstractValidator<UpdatePercentFidoRequest>
+    public class UpdatePercentFidoValidator : AbstractValidator<UpdateFidoPercentRequest>
     {
         public UpdatePercentFidoValidator(IRepository repository)
         {

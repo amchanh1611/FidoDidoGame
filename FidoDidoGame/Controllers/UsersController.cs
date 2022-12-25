@@ -1,4 +1,5 @@
-﻿using FidoDidoGame.Modules.Users.Request;
+﻿using FidoDidoGame.Modules.Users.Entities;
+using FidoDidoGame.Modules.Users.Request;
 using FidoDidoGame.Modules.Users.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,12 +21,6 @@ namespace FidoDidoGame.Controllers
             service.Create(request);
             return Ok();
         }
-        [HttpPost("Status")]
-        public IActionResult CreateStatus([FromBody] List<string> statusNames)
-        {
-            service.CreateStatus(statusNames);
-            return Ok();
-        }
         [HttpPut("{userId}")]
         public IActionResult Update([FromRoute] int userId, [FromBody] UpdateUserRequest request)
         {
@@ -36,6 +31,17 @@ namespace FidoDidoGame.Controllers
         public IActionResult Profile([FromRoute] int userId, [FromQuery] ProfilesRequest request)
         {
             return Ok(service.Profile(userId));
+        }
+        [HttpGet("UserStatus/Add/{userId}")]
+        public IActionResult AddUserStatus([FromRoute] int userId, [FromQuery] UserStatus status)
+        {
+            service.AddUserStatus(userId, status);
+            return Ok();
+        }[HttpGet("UserStatus/Remove/{userId}")]
+        public IActionResult RemoveUserStatus([FromRoute] int userId, [FromQuery] UserStatus status)
+        {
+            service.DeleteUserStatus(userId, status);
+            return Ok();
         }
     }
 }

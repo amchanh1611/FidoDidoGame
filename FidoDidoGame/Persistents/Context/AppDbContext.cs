@@ -21,27 +21,10 @@ namespace FidoDidoGame.Persistents.Context
                 builder.Property(x => x.Address).HasColumnType("text");
                 builder.Property(x => x.Male).HasColumnType("tinyint");
                 builder.Property(x => x.Avatar).HasColumnType("text");
+                builder.Property(x => x.Status).HasColumnType("text");
                 builder.HasOne(x => x.Fido)
                 .WithMany(x => x.Users)
                 .HasForeignKey(x => x.FidoId);
-            });
-            modelBuilder.Entity<Status>(builder =>
-            {
-                builder.ToTable(nameof(Status).Underscore());
-                builder.HasKey(x => x.StatusCode);
-                builder.Property(x => x.StatusCode).HasColumnType("char(9)");
-
-            });
-            modelBuilder.Entity<UserStatus>(builder =>
-            {
-                builder.ToTable(nameof(UserStatus).Underscore());
-                builder.HasKey(x => new { x.UserId, x.StatusCode });
-                builder.HasOne(x => x.User)
-                .WithMany(x => x.UserStatus)
-                .HasForeignKey(x => x.UserId);
-                builder.HasOne(x => x.Status)
-                .WithMany(x => x.UserStatus)
-                .HasForeignKey(x => x.StatusCode);
             });
             modelBuilder.Entity<Fido>(builder =>
             {
@@ -73,6 +56,7 @@ namespace FidoDidoGame.Persistents.Context
             {
                 builder.ToTable(nameof(PointDetail).Underscore());
                 builder.HasKey(x => x.Id);
+                builder.Property(x => x.Point).HasColumnType("char(9)");
                 builder.HasOne(x => x.User)
                 .WithMany(x => x.PointDetails)
                 .HasForeignKey(x => x.UserId);

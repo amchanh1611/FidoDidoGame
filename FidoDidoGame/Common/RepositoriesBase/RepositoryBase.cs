@@ -35,7 +35,7 @@ namespace FidoDidoGame.Common.RepositoriesBase
 
         public IQueryable<T> FindAll() => context.Set<T>().AsNoTracking();
 
-        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => context.Set<T>().Where(expression).AsNoTracking();
+        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => context.Set<T>().Where(expression);
 
         public T Update(T entity) => context.Set<T>().Update(entity).Entity;
 

@@ -13,11 +13,9 @@ namespace FidoDidoGame.Modules.Users.Entities
         public string? Address { get; set; }
         public UserMale? Male { get; set; }
         public string? Avatar { get; set; } = default!;
-        [JsonIgnore]
+        public string Status { get; set; } = default!;
         public int? FidoId { get; set; }
-        [JsonIgnore]
         public Fido? Fido { get; set; }
-        public ICollection<UserStatus>? UserStatus { get; set; }
         public ICollection<PointOfDay>? PointOfDays { get; set; }
         public ICollection<PointDetail>? PointDetails { get; set; }
     }
@@ -25,5 +23,13 @@ namespace FidoDidoGame.Modules.Users.Entities
     {
         Male = 1,
         Female
+    }
+    public enum UserStatus
+    {
+        Normal = 1,
+        X2,
+        Auto,
+        Heal,
+        Ban
     }
 }

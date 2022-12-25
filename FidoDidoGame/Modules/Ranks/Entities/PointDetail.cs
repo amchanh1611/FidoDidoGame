@@ -6,7 +6,7 @@ namespace FidoDidoGame.Modules.Ranks.Entities
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int Point { get; set; }
+        public string Point { get; set; } = default!;
         public DateTime Date { get; set; }
         public User? User { get; set; }
     }

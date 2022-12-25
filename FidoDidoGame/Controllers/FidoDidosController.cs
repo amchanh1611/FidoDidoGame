@@ -37,5 +37,18 @@ namespace FidoDidoGame.Controllers
         {
             return Ok(service.Fido(userId));
         }
+
+        [HttpGet("Dido/{userId}")]
+        public IActionResult Dido([FromRoute] int userId)
+        {
+            return Ok(service.Dido(userId));
+        }
+
+        [HttpPut("Fido/{fidoId}/Percent")]
+        public IActionResult UpdateFidoPercent([FromRoute] int fidoId, UpdateFidoPercentRequest request)
+        {
+            service.UpdateFidoPercent(fidoId, request);
+            return Ok();
+        }
     }
 }
