@@ -1,0 +1,48 @@
+Redis sortset
+
+ - ZADD key score member : thêm phần tử vào sortset có thể thêm nhiều phần tử cùng lúc : ZADD key score member score member [score member] ....
+ 
+- ZMPOP numkeys key <MIN | MAX> [Count count] dịch ra là (sortset multi pop) ()
+	+ numkeys : số key cần lấy danh sách * ví dụ lấy từ 2 sortset khác nhau thì numkeys = 2
+	+ key : tên của key * ví dụ lấy từ 2 sortset khác nhau : ZMPOP 2 namekey1 namekey2
+	+ [MIN | MAX] : MIN lấy theo thứ tăng dần, MAX lấy giảm dần
+	+ Count : số phần tử muốn lấy mặc định là 1
+    => ZMPOP lấy ra xong sẽ xóa số phần tử lấy ra luôn 
+ 
+ - ZPOPMAX,ZPOPMIN key [Count count] : dịch (sortset POP MAX | MIN)
+    => tượng tự ZMPOP, nhưng chỉ POP của 1 sortset, ZPOPMAX lấy giảm dần ZPOPMIN ngược lại
+
+ - ZCARD key : trả về số lượng phần tử của sortset
+ 
+ - ZCOUNT key min max : trả về số lượng phần tử của sortset với điểm nằm trong min max
+
+ - ZDIFFSTORE key_destination numkeys key.... 
+	=> thực hiện lưu trử lại những member của ZS đầu tiên mà khác với những member của những ZS còn lại "= except trong .NET",
+		 rồi lưu trữ vào key_destination nếu key_destination đã tồn tại nó sẽ ghi dè và trả ra số lượng kết quả hoàng thành
+ - ZDIFF tương tự như ZDIFFSTORE nhưng chỉ trả ra cho client chứ không lưu trữ lại
+
+ - ZUNIONSTORE key_destination numkeys [key]... [ WEIGHTS [weights...] ] [ AGGREGATE sum | max | min ]
+   => giao các ZS lại với nhau và lưu trử nó vào ZS mới với key = key_destination, các member giống nhau sẽ được cộng score lại = "UNION trong .NET"
+	,  tùy chọn weights là nhân score của các member trước khi nó được giao lại với nhau, có bao nhiêu key thì phải chỉ định bấy nhiêu weights
+		ví dụ : ZUNIONSTORE mykey 2 zset1 zset2 WEIGHTS 2 3 : trước khi giao lại thì nhân score của zset1 lên 2 và zset2 lên 3 
+	, tùy chọn AGGREGATE cách lấy score mặc định là sum 
+	, lưu lại vào ZS mới và trả ra số lượng kết quả hoàng thành
+ - ZUNION numkeys [key...] [ WEIGHTS [weights...] ] [ AGGREGATE sum | max | min ]
+ => tượng tự như ZUNIONSTORE nhưng không lưu lại kết quả mà hiển thị kết quả ra luôn
+
+ - ZINTER "= intersect .NET", ZINTERSTORE, ZINTERCARD => store là lưu trả số kêt quả đã lưu, INTER là trả ra kq không lưu, CARD không lưu trả ra số lượng kq hoàn thành
+
+
+ - ZINCRBY key increment member (ZS increment by) 
+ => thực hiện tăng score của member thêm increment điểm, nếu member không tồn tại thì 1 member mới sẽ được tạo ra với score = increment,
+	nếu key không tồn tại thì 1 ZS mới sẽ được tạo với key = key và có 1 phần tử với score = increment, member = member
+
+ - ZLEXCOUNT key min max 
+    => khi các phần tử có cùng score sẽ được sắp xếp theo bảng chữ cái, lệnh này sẽ trả về số phần tử có cùng scores
+	min biểu diển chữ cái bắt đầu, max biểu diển chữ cái kết thúc, lấy từ A-Z dùng (- +)
+
+ - ZMSCORE key [member...] => lấy ra score của các member
+ - ZRANDMEMBER key [Count [WithScores]] => không có options thì lấy 1 member ngẩu nhiên trong ZS
+	, nếu thêm option count là số dương thì sẽ lấy ngẫu nhiên count phần tử không trùng nhau
+	, nếu count là số âm thì sẽ lấy ngẫu nhiên (|count| trị tuyết đối) phần tử có thể trùng nhau	  
+ - ZRANGE key start stop

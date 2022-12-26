@@ -1,0 +1,21 @@
+
+!!!!!!!!! dem savechange & transaction vao repositoryBase khong de o RepositoryWrapper nua de sau nay dem di khong can viet lai
+
+!!!!!!!!! validate Profile Request neu truyen vao userId khong ton tai
+
+????? Idea Đầu tiên là chia ra 3 bảng: vì gộp chung 1 bảng phải serialize/deserialize rất tốn công, còn chia ra 3 bảng thì sẽ đơn giản hơn 
+Idea thứ 2 gộp 2 bang userstatus và status vào trong 1 bảng User luôn vì chia ra sẽ tốn thêm 2 bảng : 1 bảng status ít field không đáng kể,
+nhưng bảng UserStatus thì sẽ rất lớn vì có bao nhiêu User thì sẽ có ít nhất là bao nhiêu field bên bảng UserStatus, còn có những User đồng thời
+có nhiều hơn 1 Status ???????
+
+tạo sao lưu Point là string???? vì nếu khi lưu là int ví dụ lấy số nhỏ (1 2 chẳng hạn) thì khi muốn đổi rule có point giống như point đó phải
+sửa code lại, còn nếu lưu là số âm nếu muốn đổi rule quay dô ô trừ điểm 
+
+validateFido =>  userId hop le :de sau
+validateDido =>  userId hop le :de sau
+
+
+Id	number	percent
+1	10	10
+2	10	20
+3	20	40

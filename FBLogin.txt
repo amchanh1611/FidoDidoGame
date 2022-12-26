@@ -1,0 +1,11 @@
+https://stackoverflow.com/questions/71109726/asp-net-core-web-api-authentication-with-facebook
+
+https://stackoverflow.com/questions/53390430/how-to-get-current-user-access-token-from-facebook-sdk-in-c-not-the-app-access
+
+https://stackoverflow.com/questions/66177548/what-is-the-purpose-of-facebook-valid-oauth-redirect-uris V
+
+https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
+
+https://developers.facebook.com/docs/permissions/reference
+
+https://developers.facebook.com/community/threads/161027219200706/?locale=vi_VN  lieen quan den refresh

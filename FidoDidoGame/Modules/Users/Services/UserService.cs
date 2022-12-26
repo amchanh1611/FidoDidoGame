@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Request;
 using FidoDidoGame.Persistents.Repositories;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Text.Json;
 
 namespace FidoDidoGame.Modules.Users.Services
 {
@@ -9,7 +12,8 @@ namespace FidoDidoGame.Modules.Users.Services
     {
         void Create(CreateUserRequest request);
         void Update(int userId, UpdateUserRequest request);
-        void CreateStatus(List<string> statusName);
+        void AddUserStatus(int userId, UserStatus status);
+        void DeleteUserStatus(int userId, UserStatus status);
         User Profile(int userId);
     }
     public class UserService : IUserService
@@ -24,15 +28,61 @@ namespace FidoDidoGame.Modules.Users.Services
 
         public void Create(CreateUserRequest request)
         {
-            repository.User.Create(mapper.Map<CreateUserRequest, User>(request));
-            repository.Save();
+            using IDbContextTransaction transaction = repository.User.Transaction();
+            try
+            {
+                User user = repository.User.Create(mapper.Map<CreateUserRequest, User>(request));
+                List<UserStatus> userStatus = new() { UserStatus.Normal};
+                user.Status = JsonSerializer.Serialize(userStatus);
+                repository.User.Save();
+                transaction.Commit();
+            }
+            catch(Exception ex)
+            {
+                transaction.Rollback();
+                throw new BadRequestException("Create Fail");
+            }
         }
 
-        public void CreateStatus(List<string> statusName)
+        public void DeleteUserStatus(int userId, UserStatus status)
         {
-            List<Status> status = statusName.Select(x => new Status { Name = x }).ToList();
-            repository.Status.CreateMulti(status);
-            repository.Save();
+            User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
+            List<UserStatus> userStatus = JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!;
+            if (status == UserStatus.Ban)
+            {
+                userStatus.Remove(UserStatus.Ban);
+                userStatus.Add(UserStatus.Normal);
+                user.Status = JsonSerializer.Serialize(userStatus);
+            }
+            else
+            {
+                userStatus.Remove(status);
+                user.Status = JsonSerializer.Serialize(userStatus);
+            }
+            
+            repository.User.Update(user);
+            repository.User.Save();
+        }
+
+        public void AddUserStatus(int userId, UserStatus status)
+        {
+            User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
+            List<UserStatus> userStatus = JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!;
+            if (status == UserStatus.Ban)
+            {
+                userStatus.Add(UserStatus.Ban);
+                userStatus = userStatus.Where(x => x == UserStatus.Ban).ToList(); 
+                user.Status = JsonSerializer.Serialize(userStatus);
+            }
+            else
+            {
+                
+                userStatus.Add(status);
+                user.Status = JsonSerializer.Serialize(userStatus);
+            }
+            
+            repository.User.Update(user);
+            repository.User.Save();
         }
 
         public User Profile(int userId)
@@ -44,7 +94,7 @@ namespace FidoDidoGame.Modules.Users.Services
         {
             User? user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault();
             repository.User.Update(mapper.Map(request, user!));
-            repository.Save();
+            repository.User.Save();
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FidoDidoGame.Migrations
 {
-    public partial class FirstTimeCreateModels : Migration
+    public partial class EditStructureDatabase : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,7 +35,8 @@ namespace FidoDidoGame.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Percent = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,14 +48,12 @@ namespace FidoDidoGame.Migrations
                 name: "status",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    StatusCode = table.Column<string>(type: "char(9)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_status", x => x.Id);
+                    table.PrimaryKey("PK_status", x => x.StatusCode);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -65,7 +64,8 @@ namespace FidoDidoGame.Migrations
                     FidoId = table.Column<int>(type: "int", nullable: false),
                     DidoId = table.Column<int>(type: "int", nullable: false),
                     Percent = table.Column<int>(type: "int", nullable: false),
-                    Point = table.Column<int>(type: "int", nullable: false)
+                    Point = table.Column<string>(type: "char(9)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -99,8 +99,8 @@ namespace FidoDidoGame.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Address = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Male = table.Column<sbyte>(type: "tinyint", nullable: false),
-                    Avatar = table.Column<string>(type: "text", nullable: false)
+                    Male = table.Column<sbyte>(type: "tinyint", nullable: true),
+                    Avatar = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     FidoId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -164,16 +164,17 @@ namespace FidoDidoGame.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    StatusId = table.Column<int>(type: "int", nullable: false)
+                    StatusCode = table.Column<string>(type: "char(9)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_status", x => new { x.UserId, x.StatusId });
+                    table.PrimaryKey("PK_user_status", x => new { x.UserId, x.StatusCode });
                     table.ForeignKey(
-                        name: "FK_user_status_status_StatusId",
-                        column: x => x.StatusId,
+                        name: "FK_user_status_status_StatusCode",
+                        column: x => x.StatusCode,
                         principalTable: "status",
-                        principalColumn: "Id",
+                        principalColumn: "StatusCode",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_user_status_user_UserId",
@@ -205,9 +206,9 @@ namespace FidoDidoGame.Migrations
                 column: "FidoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_user_status_StatusId",
+                name: "IX_user_status_StatusCode",
                 table: "user_status",
-                column: "StatusId");
+                column: "StatusCode");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
