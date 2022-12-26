@@ -50,7 +50,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
 
             fidoDido.PercentRand = repository.FidoDido
                 .FindByCondition(x => x.FidoId == request.FidoId).Sum(x => x.Percent) + request.Percent!.Value;
-            
+
             repository.FidoDido.Create(fidoDido);
             repository.Fido.Save();
         }
@@ -76,7 +76,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
         {
             User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
 
-            List<Fido> fidos  = repository.Fido.FindAll().OrderBy(x=>x.PercentRand).ToList();
+            List<Fido> fidos = repository.Fido.FindAll().OrderBy(x => x.PercentRand).ToList();
             Random rand = new();
             int point = rand.Next(0, 100);
 
@@ -95,16 +95,30 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
             repository.User.Update(user);
             repository.User.Save();
 
-            return new FidoResponse(userId,fido!.Name, JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!);
+            return new FidoResponse(userId, fido!.Name, JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!);
         }
 
         public void UpdateFidoPercent(int fidoId, UpdateFidoPercentRequest request)
         {
-            var a = repository.Fido.FindAll().TakeWhile(x => x.Id == fidoId).AsEnumerable();
+            List<Fido> fidos = repository.Fido.FindAll().OrderBy(x => x.PercentRand).ToList();
+            Fido fido = fidos.Where(x => x.Id == fidoId).FirstOrDefault()!;
 
-            Fido fido = repository.Fido.FindByCondition(x => x.Id == fidoId).FirstOrDefault()!;
 
-            Fido fidoUpdate = mapper.Map(request, fido);
+            fido.Percent += request.Percent!.Value;
+
+            fido.PercentRand = fidos.TakeWhile(x => x.PercentRand < fido.PercentRand).Sum(x => x.Percent) + fido.Percent;
+
+            int index = fidos.IndexOf(fido);
+
+            fidos = fidos.OrderBy(x => x.PercentRand).ToList();
+
+            for (int i = index; i < fidos.Count; i++)
+            {
+                fidos[i].PercentRand = fidos.TakeWhile(x => x.PercentRand < fidos[i].PercentRand).Sum(x => x.Percent) + fidos[i].Percent;
+            }
+
+            repository.Fido.UpdateMulti(fidos);
+            repository.Fido.Save();
         }
 
         public DidoResponse Dido(int userId)
@@ -116,7 +130,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
 
                 List<UserStatus> userStatus = JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!;
 
-                List<FidoDido> fidoDidos = repository.FidoDido.FindByCondition(x => x.FidoId == user.FidoId).Include(x=>x.Dido).OrderBy(x => x.PercentRand).ToList();
+                List<FidoDido> fidoDidos = repository.FidoDido.FindByCondition(x => x.FidoId == user.FidoId).Include(x => x.Dido).OrderBy(x => x.PercentRand).ToList();
 
                 Random rand = new();
                 int point = rand.Next(0, 100);
@@ -197,11 +211,11 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                     DateTime dateResetStatus = DateTime.Now.AddMinutes(1);
                     hangfire.Schedule(() => userService.DeleteUserStatus(userId, status), dateResetStatus);
 
-                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = fidoDido.Point.ToString() });
+                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = fidoDido.Point });
                     repository.PointDetail.Save();
 
                     UserRankDetailIn userRankDetailIn = new(date, userId, user.Name, fidoDido.Point);
-                    redis.Set($"{KeyRankDetail}{userId}:{pointDetail.Id}", userRankDetailIn);
+                    redis.Set($"{KeyRankDetail}:{userId}:{pointDetail.Id}", userRankDetailIn);
 
                 }
 
@@ -211,7 +225,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                 transaction.Commit();
                 return new DidoResponse(fidoDido.Dido!.Name, fidoDido.Point);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 transaction.Rollback();
                 throw new BadRequestException("Dido fail");

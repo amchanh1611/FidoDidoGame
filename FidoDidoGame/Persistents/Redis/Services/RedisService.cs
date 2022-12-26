@@ -48,7 +48,7 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         public List<T> GetAll<T>(string pattern)
         {
-            RedisKey[] keys = server.Keys(pattern: pattern).ToArray();
+            RedisKey[] keys = server.Keys(pattern: $"*{pattern}*").ToArray();
             RedisValue[] values = db.StringGet(keys);
             return values.Select(x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
         }

@@ -48,7 +48,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
         {
             RuleFor(x => x).Must((_, request) =>
             {
-                return repository.Fido.FindAll().Sum(x => x.Percent) < 100;
+                return repository.Fido.FindAll().Sum(x => x.Percent) <= 100;
             }).WithMessage("Invalid percent");
             RuleFor(x => x).Must((_, request) =>
             {

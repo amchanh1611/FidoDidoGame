@@ -9,6 +9,7 @@ namespace FidoDidoGame.Common.RepositoriesBase
     {
         T Create(T entity);
         T Update(T entity);
+        void UpdateMulti(List<T> entities);
         void Delete(T entity);
         void CreateMulti(List<T> entities);
         void DeleteMulti(List<T> entities);
@@ -42,6 +43,8 @@ namespace FidoDidoGame.Common.RepositoriesBase
         public IDbContextTransaction Transaction() => context.Database.BeginTransaction();
 
         public void Save() => context.SaveChanges();
+
+        public void UpdateMulti(List<T> entities) => context.Set<T>().UpdateRange(entities);
     }
 
 }
