@@ -11,8 +11,8 @@ có nhiều hơn 1 Status ???????
 tạo sao lưu Point là string???? vì nếu khi lưu là int ví dụ lấy số nhỏ (1 2 chẳng hạn) thì khi muốn đổi rule có point giống như point đó phải
 sửa code lại, còn nếu lưu là số âm nếu muốn đổi rule quay dô ô trừ điểm 
 
-validateFido =>  userId hop le
-validateDido =>  userId hop le
+validateFido =>  userId hop le :de sau
+validateDido =>  userId hop le :de sau
 
 
 Id	number	percent

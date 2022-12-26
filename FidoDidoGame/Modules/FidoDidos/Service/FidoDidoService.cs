@@ -74,7 +74,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
 
         public FidoResponse Fido(int userId)
         {
-            User user = repository.User.FindByCondition(x => x.Id == userId).Include(x=>x.Fido).FirstOrDefault()!;
+            User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
 
             List<Fido> fidos  = repository.Fido.FindAll().OrderBy(x=>x.PercentRand).ToList();
             Random rand = new();
@@ -197,7 +197,7 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                     DateTime dateResetStatus = DateTime.Now.AddMinutes(1);
                     hangfire.Schedule(() => userService.DeleteUserStatus(userId, status), dateResetStatus);
 
-                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = outPoint.ToString() });
+                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = fidoDido.Point.ToString() });
                     repository.PointDetail.Save();
 
                     UserRankDetailIn userRankDetailIn = new(date, userId, user.Name, fidoDido.Point);

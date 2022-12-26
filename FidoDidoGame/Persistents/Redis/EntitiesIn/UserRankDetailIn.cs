@@ -1,4 +1,6 @@
-﻿namespace FidoDidoGame.Persistents.Redis.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace FidoDidoGame.Persistents.Redis.Entities
 {
     public class UserRankDetailIn
     {
