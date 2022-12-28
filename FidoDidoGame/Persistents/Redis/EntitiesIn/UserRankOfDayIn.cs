@@ -2,13 +2,16 @@
 {
     public class UserRankOfDayIn
     {
-        public DateTime Date { get; set; }
+        public long DateMiliSecond { get; set; }
         public string UserName { get; set; } = default!;
-
-        public UserRankOfDayIn(DateTime date, string userName)
+        public int Point { get; set; }
+        public DateTime Date { get; set; }
+        public UserRankOfDayIn(long dateMiliSecond, string userName, int point, DateTime date)
         {
-            Date = date;
+            DateMiliSecond = dateMiliSecond;
             UserName = userName;
+            Point = point;
+            Date = date;
         }
     }
 }

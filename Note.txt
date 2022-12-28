@@ -21,14 +21,6 @@ PointDetail phải lưu cả khi trúng những trạng thái đặc biệt????
 => để rõ ràng hơn, nếu lở như ngta nói ngày đó, lần đó người ta trúng điểm tại sao không cộng điểm cho người ta, thì mình có cái để mà nói 
 cho người ta biết
 
-không nhất thiết phải lưu status dô redis???
-=> Lưu dô MySql 						Lưy dô redis: 
-	1. GetUser ra							1. Get user ra
-	2. Quay điểm							2. Quay điểm
-	3. Trúng thì set UserStatus { - Serializer(UserStatus)		3. lưu dô redis { - Serializer
-				      - Gán cho user					  - set expire time
-	4. Đặt lịch xóa 
-Chỉ tốn thêm việc triển khai hangfire????
-hangfire cũng làm được tại sao phải dùng redis????
-về mặt performance thì đường nào cũng get userStatus ra, lúc get user ra được rồi thì status cũng có sẵn rồi, đâu cần tốn công dô redis lấy ra nữa
-về không gian lưu trữ thì 1 bên tốn bộ nhớ RAM 1 bên tốn bộ nhớ chính: như nhau
+{"DateMiliSecond":2461772164058,"UserName":"minhminh","Point":4920,"Date":"2022-12-27T23:23:54.941793Z"}
+
+{"DateMiliSecond":2461772164058,"UserName":"minhminh","Point":4920,"Date":"2022-12-28T06:23:54.941793Z"}

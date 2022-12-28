@@ -1,4 +1,5 @@
-﻿using FidoDidoGame.Modules.Ranks.Services;
+﻿using FidoDidoGame.Modules.Ranks.Request;
+using FidoDidoGame.Modules.Ranks.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +15,10 @@ namespace FidoDidoGame.Controllers
         {
             this.service = service;
         }
-        [HttpGet]
-        public IActionResult Ranking()
+        [HttpGet("Rank")]
+        public IActionResult Ranking([FromQuery] GetRankRequest request)
         {
-            service.Ranking();
-            return Ok();
+            return Ok(service.Ranking(request));
         }
     }
 }

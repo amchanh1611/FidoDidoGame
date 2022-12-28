@@ -37,7 +37,7 @@ builder.Services.AddDbContextPool<AppDbContext>(option =>
 //Hangfire
 builder.Services.AddHangfire
     (x => x.UseStorage(
-        new MySqlStorage("server=localhost;database=emailmarketing;uid=root;pwd='';Allow User Variables=True",
+        new MySqlStorage(configure["HangfireSettings:Connect"],
         new MySqlStorageOptions())));
 builder.Services.AddHangfireServer(options => configure.GetSection("HangfireSettings:Server").Bind(options));
 

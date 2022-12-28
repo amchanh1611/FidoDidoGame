@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using FidoDidoGame.Common.DateTimeConverter;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace FidoDidoGame.Persistents.Redis.Services
@@ -12,7 +13,8 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         bool Delete(string key);
 
-        SortedSetEntry[] ZSGet(string key, int start = 0, int end = -1, Order order = Order.Descending);
+        SortedSetEntry[] ZSGetWithScores(string key, int start = 0, int end = -1, Order order = Order.Descending);
+        List<T> ZSGet<T>(string key, int start = 0, int end = -1, Order order = Order.Descending);
 
         double ZSIncre<T>(string key, double score, T member);
 
@@ -57,8 +59,8 @@ namespace FidoDidoGame.Persistents.Redis.Services
         {
             TimeSpan? exp = null;
             if (expirationTime.Length != 0)
-                 exp = expirationTime[1].Subtract(DateTime.Now);
-                
+                exp = expirationTime[1].Subtract(DateTime.Now);
+
             return db.StringSet(key, JsonSerializer.Serialize(obj), exp);
         }
 
@@ -67,13 +69,31 @@ namespace FidoDidoGame.Persistents.Redis.Services
             bool check = db.KeyExists(key);
             if (check)
             {
-                db.SortedSetRemove(key, JsonSerializer.Serialize(member));
+                //JsonSerializerOptions options = new JsonSerializerOptions();
+                //options.Converters.Add(new DateTimeConverter1());
+                var b = JsonSerializer.Serialize(member);
+
+                //var members = db.SortedSetRank(key, b);
+
+                //bool c = db.SortedSetRemove(key, JsonSerializer.Serialize(member, options));
+                bool c = db.SortedSetRemove(key, JsonSerializer.Serialize(member));
                 return true;
             }
             return false;
         }
 
-        public SortedSetEntry[] ZSGet(string key, int start = 0, int end = -1, Order order = Order.Descending)
+        public List<T> ZSGet<T>(string key, int start = 0, int end = -1, Order order = Order.Descending)
+        {
+            bool check = db.KeyExists(key);
+            if (check)
+            {
+                RedisValue[] values = db.SortedSetRangeByRank(key, start, end, order);
+                return Array.ConvertAll(values, x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
+            }
+            return default!;
+        }
+
+        public SortedSetEntry[] ZSGetWithScores(string key, int start = 0, int end = -1, Order order = Order.Descending)
         {
             bool check = db.KeyExists(key);
             if (check)
@@ -84,7 +104,13 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         public double ZSIncre<T>(string key, double score, T member)
         {
+            //JsonSerializerOptions options = new JsonSerializerOptions();
+            //options.Converters.Add(new DateTimeConverter1());
+
+            //var a = JsonSerializer.Serialize(member, options);
+
             return db.SortedSetIncrement(key, JsonSerializer.Serialize(member), score);
+            //return db.SortedSetIncrement(key, a, score);
         }
 
         public bool ZSSet<T>(string key, double score, T member)

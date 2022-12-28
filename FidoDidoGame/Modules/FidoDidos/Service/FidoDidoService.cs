@@ -137,19 +137,10 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                 Random rand = new();
                 int point = rand.Next(0, 100);
 
-                FidoDido fidoDido = new();
-
-                foreach (FidoDido item in fidoDidos)
-                {
-                    if (point < item.PercentRand)
-                    {
-                        fidoDido = item;
-                        break;
-                    }
-                }
+                FidoDido fidoDido = fidoDidos.Where(x => point < x.PercentRand).FirstOrDefault()!;
 
                 //Gets Item Date
-                DateTime date = DateTime.UtcNow;
+                DateTime date = DateTime.Now;
 
                 //Create a object outPoint used to checking if FidoDido.Point can be Parse
                 int outPoint = 0;
@@ -169,21 +160,13 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                     //If user gets the Special Item 
 
                     UserStatus status = UserStatus.Normal;
-                    switch (fidoDido.Point)
+                    status = fidoDido.Point switch
                     {
-                        case "x2":
-                            status = UserStatus.X2;
-                            break;
-                        case "auto":
-                            status = UserStatus.Auto;
-                            break;
-                        case "heal":
-                            status = UserStatus.Heal;
-                            break;
-                        default:
-                            status = UserStatus.Ban;
-                            break;
-                    }
+                        "x2" => UserStatus.X2,
+                        "auto" => UserStatus.Auto,
+                        "heal" => UserStatus.Heal,
+                        _ => UserStatus.Ban,
+                    };
 
                     //Update user status
                     userService.AddUserStatus(userId, status);

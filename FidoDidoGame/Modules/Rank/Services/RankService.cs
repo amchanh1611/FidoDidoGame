@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FidoDidoGame.Common.Pagination;
 using FidoDidoGame.Modules.Rank.Request;
 using FidoDidoGame.Modules.Rank.Response;
 using FidoDidoGame.Modules.Ranks.Entities;
@@ -6,8 +7,6 @@ using FidoDidoGame.Modules.Ranks.Request;
 using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
-using StackExchange.Redis;
-using System.Text.Json;
 
 namespace FidoDidoGame.Modules.Ranks.Services
 {
@@ -15,7 +14,7 @@ namespace FidoDidoGame.Modules.Ranks.Services
     {
         void CreatePointDetail(CreatePointDetailRequest request);
         void UpdateRank(UpdateRank request);
-        void Ranking(/*GetRankRequest request*/);
+        PaggingResponse<RankingResponse> Ranking(GetRankRequest request);
     }
     public class RankService : IRankService
     {
@@ -38,7 +37,7 @@ namespace FidoDidoGame.Modules.Ranks.Services
             PointOfDay pointOfDay = repository.PointOfDay.Create(mapper.Map<CreatePointOfDayRequest, PointOfDay>(request));
             repository.PointOfDay.Save();
 
-            UserRankOfDayIn userRankOfDayIn = new(pointOfDay.Date, request.UserName!);
+            UserRankOfDayIn userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
             redis.ZSSet(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
         }
 
@@ -58,7 +57,10 @@ namespace FidoDidoGame.Modules.Ranks.Services
             PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.Id == pointOfDayId).FirstOrDefault()!;
 
             //Remove old member in sortset in Redis if PointOfDay already exist
-            UserRankOfDayIn userRankOfDayIn = new(pointOfDay.Date, request.UserName!);
+            UserRankOfDayIn userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
+
+            Console.WriteLine(userRankOfDayIn.Date);
+
             redis.ZSDelete(KeysRankOfDay, userRankOfDayIn);
 
             //Update point in MySql 
@@ -69,7 +71,10 @@ namespace FidoDidoGame.Modules.Ranks.Services
             repository.User.Save();
 
             //Update new member in sortset in Redis
-            userRankOfDayIn = new(pointOfDay.Date, request.UserName!);
+            userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
+
+            Console.WriteLine(userRankOfDayIn.Date);
+
             redis.ZSIncre(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
         }
 
@@ -80,18 +85,15 @@ namespace FidoDidoGame.Modules.Ranks.Services
 
             UserRankDetailIn userRankDetailIn = new(pointDetail.Date, request.UserName!, pointDetail.Point, pointDetail.IsX2);
 
-            redis.ZSSet($"{KeyRankDetail}:User:{pointDetail.UserId}", pointDetail.Id, userRankDetailIn);
+            redis.ZSSet($"{KeyRankDetail}:User:{pointDetail.UserId}", (int)request.Date.Subtract(DateTime.UtcNow).TotalSeconds, userRankDetailIn);
         }
 
-        public void Ranking(/*GetRankRequest request*/)
+        public PaggingResponse<RankingResponse> Ranking(GetRankRequest request)
         {
-            SortedSetEntry[] a = redis.ZSGet(KeysRankOfDay);
-            List<RankingResponse> result =  a.Select(x => new RankingResponse
-            { 
-                Point = (int)x.Score, 
-                UserName = JsonSerializer.Deserialize<UserRankOfDayIn>(x.Element!)!.UserName,
-                Date = JsonSerializer.Deserialize<UserRankOfDayIn>(x.Element!)!.Date
-            }).OrderBy(x=>x.Date).ToList();
+            List<UserRankOfDayIn> values = redis.ZSGet<UserRankOfDayIn>(KeysRankOfDay);
+            return mapper.Map<List<UserRankOfDayIn>, List<RankingResponse>>(values)
+                .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd).AsQueryable()
+                .ApplyPagging(request.Current, request.PageSize); 
         }
     }
 }
