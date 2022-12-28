@@ -3,15 +3,12 @@
     public class UserRankOfDayIn
     {
         public DateTime Date { get; set; }
-        public int UserId { get; set; }
-        public string Name { get; set; } = default!;
+        public string UserName { get; set; } = default!;
 
-        public UserRankOfDayIn(DateTime date, int userId, string name)
+        public UserRankOfDayIn(DateTime date, string userName)
         {
             Date = date;
-            UserId = userId;
-            Name = name;
+            UserName = userName;
         }
-        public UserRankOfDayIn() { }
     }
 }

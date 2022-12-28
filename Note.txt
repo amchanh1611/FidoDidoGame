@@ -15,9 +15,20 @@ validateFido =>  userId hop le :de sau
 validateDido =>  userId hop le :de sau
 get user.status ra de hien thi
 
+them 1 column in table PointDetail X2 true or false de ro rang hon
 
-Id	number	percent		id 	number	percent		10	20	40	100
-1	10	10		4	 60	  100
-2	10	20		2	 5	  20
-3	20	40		3	 20	  40
-4 	60	100		1	 10       10
+PointDetail phải lưu cả khi trúng những trạng thái đặc biệt???? 
+=> để rõ ràng hơn, nếu lở như ngta nói ngày đó, lần đó người ta trúng điểm tại sao không cộng điểm cho người ta, thì mình có cái để mà nói 
+cho người ta biết
+
+không nhất thiết phải lưu status dô redis???
+=> Lưu dô MySql 						Lưy dô redis: 
+	1. GetUser ra							1. Get user ra
+	2. Quay điểm							2. Quay điểm
+	3. Trúng thì set UserStatus { - Serializer(UserStatus)		3. lưu dô redis { - Serializer
+				      - Gán cho user					  - set expire time
+	4. Đặt lịch xóa 
+Chỉ tốn thêm việc triển khai hangfire????
+hangfire cũng làm được tại sao phải dùng redis????
+về mặt performance thì đường nào cũng get userStatus ra, lúc get user ra được rồi thì status cũng có sẵn rồi, đâu cần tốn công dô redis lấy ra nữa
+về không gian lưu trữ thì 1 bên tốn bộ nhớ RAM 1 bên tốn bộ nhớ chính: như nhau

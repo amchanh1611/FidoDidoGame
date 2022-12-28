@@ -2,6 +2,7 @@ using AutoMapper;
 using FidoDidoGame.Mapping;
 using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Service;
+using FidoDidoGame.Modules.Ranks.Services;
 using FidoDidoGame.Modules.Users.Services;
 using FidoDidoGame.Persistents.Context;
 using FidoDidoGame.Persistents.Redis.Services;
@@ -63,6 +64,7 @@ builder.Services.AddFluentValidationAutoValidation()
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IFidoDidoService, FidoDidoService>();
 builder.Services.AddScoped<IRedisService, RedisService>();
+builder.Services.AddScoped<IRankService, RankService>();
 
 var app = builder.Build();
 

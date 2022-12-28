@@ -57,6 +57,7 @@ namespace FidoDidoGame.Persistents.Context
                 builder.ToTable(nameof(PointDetail).Underscore());
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Point).HasColumnType("char(9)");
+                builder.Property(x => x.IsX2).HasColumnType("char(9)");
                 builder.HasOne(x => x.User)
                 .WithMany(x => x.PointDetails)
                 .HasForeignKey(x => x.UserId);

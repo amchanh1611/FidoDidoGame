@@ -3,10 +3,10 @@ using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Entities;
 using FidoDidoGame.Modules.FidoDidos.Request;
 using FidoDidoGame.Modules.FidoDidos.Response;
-using FidoDidoGame.Modules.Ranks.Entities;
+using FidoDidoGame.Modules.Rank.Request;
+using FidoDidoGame.Modules.Ranks.Services;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Services;
-using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
 using Hangfire;
@@ -27,21 +27,21 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
     }
     public class FidoDidoService : IFidoDidoService
     {
-        public const string KeysRankOfDay = "Rank";
-        public const string KeyRankDetail = "History";
         private readonly IRepository repository;
         private readonly IMapper mapper;
         private readonly IBackgroundJobClient hangfire;
         private readonly IUserService userService;
         private readonly IRedisService redis;
+        private readonly IRankService rankService;
 
-        public FidoDidoService(IRepository repository, IMapper mapper, IBackgroundJobClient hangfire, IRedisService redis, IUserService userService)
+        public FidoDidoService(IRepository repository, IMapper mapper, IBackgroundJobClient hangfire, IRedisService redis, IUserService userService, IRankService rankService)
         {
             this.repository = repository;
             this.mapper = mapper;
             this.hangfire = hangfire;
             this.userService = userService;
             this.redis = redis;
+            this.rankService = rankService;
         }
 
         public void CreateFidoDido(CreateFidoDidoRequest request)
@@ -130,12 +130,12 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
 
                 List<UserStatus> userStatus = JsonSerializer.Deserialize<List<UserStatus>>(user.Status)!;
 
+                //Gets list Dido of Fido
                 List<FidoDido> fidoDidos = repository.FidoDido.FindByCondition(x => x.FidoId == user.FidoId).Include(x => x.Dido).OrderBy(x => x.PercentRand).ToList();
 
+                //Gets Item
                 Random rand = new();
                 int point = rand.Next(0, 100);
-
-                DateTime date = DateTime.UtcNow;
 
                 FidoDido fidoDido = new();
 
@@ -148,47 +148,26 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                     }
                 }
 
+                //Gets Item Date
+                DateTime date = DateTime.UtcNow;
+
                 //Create a object outPoint used to checking if FidoDido.Point can be Parse
                 int outPoint = 0;
                 if (int.TryParse(fidoDido.Point, out outPoint))
                 {
+                    //If user gets the Normal Item 
+
                     //Checking if User is getting x2
                     if (userStatus.Where(x => x == UserStatus.X2).Any())
                         outPoint *= 2;
 
-                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = outPoint.ToString() });
-
-                    PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.UserId == user.Id && x.Date.Date == date.Date).FirstOrDefault()!;
-
-                    UserRankOfDayIn userRankOfDayIn = new();
-
-                    if (pointOfDay is null)
-                    {
-                        pointOfDay = repository.PointOfDay.Create(new PointOfDay { UserId = user.Id, Date = date, Point = outPoint });
-                    }
-                    else
-                    {
-                        //Remove old member in sortset in Redis if PointOfDay already exist
-                        userRankOfDayIn = new(pointOfDay.Date, userId, user.Name);
-                        redis.ZSDelete(KeysRankOfDay, userRankOfDayIn);
-
-                        //Update point in MySql 
-                        pointOfDay.Point += outPoint;
-                        pointOfDay.Date = date;
-                        repository.PointOfDay.Update(pointOfDay);
-                    }
-
-                    repository.User.Save();
-
-                    //create a PointOfDay to save to Redis
-                    userRankOfDayIn = new(pointOfDay.Date, userId, user.Name);
-                    UserRankDetailIn userRankDetailIn = new(date, userId, user.Name, fidoDido.Point);
-                    redis.ZSIncre(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
-                    redis.Set($"{KeyRankDetail}:{userId}:{pointDetail.Id}", userRankDetailIn);
-
+                    //Update rank of user
+                    rankService.UpdateRank(new UpdateRank { UserName = user.Name, Point = outPoint, Date = date, UserId = userId });
                 }
                 else
                 {
+                    //If user gets the Special Item 
+
                     UserStatus status = UserStatus.Normal;
                     switch (fidoDido.Point)
                     {
@@ -204,26 +183,34 @@ namespace FidoDidoGame.Modules.FidoDidos.Service
                         default:
                             status = UserStatus.Ban;
                             break;
-
                     }
+
+                    //Update user status
                     userService.AddUserStatus(userId, status);
 
+                    //Set schedule to delete user status
                     DateTime dateResetStatus = DateTime.Now.AddMinutes(1);
                     hangfire.Schedule(() => userService.DeleteUserStatus(userId, status), dateResetStatus);
-
-                    PointDetail pointDetail = repository.PointDetail.Create(new PointDetail { UserId = user.Id, Date = date, Point = fidoDido.Point });
-                    repository.PointDetail.Save();
-
-                    UserRankDetailIn userRankDetailIn = new(date, userId, user.Name, fidoDido.Point);
-                    redis.Set($"{KeyRankDetail}:{userId}:{pointDetail.Id}", userRankDetailIn);
-
                 }
 
+                //Add History gets item Of User
+                rankService.CreatePointDetail(new CreatePointDetailRequest
+                {
+                    UserId = userId,
+                    UserName = user.Name,
+                    Point = fidoDido.Point,
+                    Date = date,
+                    IsX2 = outPoint == 0 ? fidoDido.Point : outPoint.ToString()
+                });
+
+                //Update user Fido
                 user.FidoId = null;
                 repository.User.Update(user);
                 repository.User.Save();
+
                 transaction.Commit();
-                return new DidoResponse(fidoDido.Dido!.Name, fidoDido.Point);
+
+                return new DidoResponse(fidoDido.Dido!.Name, outPoint == 0 ? fidoDido.Point : outPoint.ToString());
             }
             catch (Exception ex)
             {

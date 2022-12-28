@@ -5,15 +5,15 @@ namespace FidoDidoGame.Persistents.Redis.Entities
     public class UserRankDetailIn
     {
         public DateTime Date { get; set; }
-        public int UserId { get; set; }
-        public string Name { get; set; } = default!;
+        public string UserName { get; set; } = default!;
         public string Point { get; set; }
-        public UserRankDetailIn(DateTime date, int userId, string name, string point)
+        public string IsX2 { get; set; }
+        public UserRankDetailIn(DateTime date, string name, string point, string isX2)
         {
             Date = date;
-            UserId = userId;
-            Name = name;
+            UserName = name;
             Point = point;
+            IsX2 = isX2;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         bool Delete(string key);
 
-        SortedSetEntry[] ZSGet(string key, int start, int end, Order order);
+        SortedSetEntry[] ZSGet(string key, int start = 0, int end = -1, Order order = Order.Descending);
 
         double ZSIncre<T>(string key, double score, T member);
 
@@ -73,7 +73,7 @@ namespace FidoDidoGame.Persistents.Redis.Services
             return false;
         }
 
-        public SortedSetEntry[] ZSGet(string key, int start, int end, Order order)
+        public SortedSetEntry[] ZSGet(string key, int start = 0, int end = -1, Order order = Order.Descending)
         {
             bool check = db.KeyExists(key);
             if (check)
