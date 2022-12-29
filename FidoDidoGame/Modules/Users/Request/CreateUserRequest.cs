@@ -13,6 +13,7 @@ namespace FidoDidoGame.Modules.Users.Request
         public string? NickName { get; set; }
         public string? Phone { get; set; }
         public string? Address { get; set; }
+        public string? IdCard { get; set; }
     }
     public class UpdateUserValidator : AbstractValidator<UpdateUserRequest>
     {
@@ -25,6 +26,7 @@ namespace FidoDidoGame.Modules.Users.Request
             }).WithMessage("User doest not exists in system");
             RuleFor(x => x.NickName).NotEmpty().When(x => x.NickName != null).WithMessage("{PropertyName} is not valid");
             RuleFor(x => x.Address).NotEmpty().When(x => x.NickName != null).WithMessage("{PropertyName} is not valid");
+            RuleFor(x => x.IdCard).NotEmpty().When(x => x.IdCard != null).WithMessage("{PropertyName} is not valid");
             RuleFor(x => x.Phone).Matches("((84|0)+[3|5|7|8|9])+([0-9]{8})\b").When(x => x.Phone != null).WithMessage("{PropertyName} is not valid");
 
         }

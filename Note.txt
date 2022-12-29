@@ -21,6 +21,6 @@ PointDetail phải lưu cả khi trúng những trạng thái đặc biệt????
 => để rõ ràng hơn, nếu lở như ngta nói ngày đó, lần đó người ta trúng điểm tại sao không cộng điểm cho người ta, thì mình có cái để mà nói 
 cho người ta biết
 
-{"DateMiliSecond":2461772164058,"UserName":"minhminh","Point":4920,"Date":"2022-12-27T23:23:54.941793Z"}
+2022-12-25 00:00:00
 
-{"DateMiliSecond":2461772164058,"UserName":"minhminh","Point":4920,"Date":"2022-12-28T06:23:54.941793Z"}
+2022-12-30 00:00:00

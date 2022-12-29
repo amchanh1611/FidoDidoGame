@@ -25,14 +25,15 @@ namespace FidoDidoGame.Mapping
             CreateMap<CreateFidoRequest, Fido>()
                 .ForMember(dest => dest.PercentRand, opt => opt.MapFrom(src => repository.Fido.FindAll().Sum(x=>x.Percent)+src.Percent));
 
-            DateTime date = new DateTime(5000, 12, 31, 23, 59, 59);
-
             //Rank
+            long miliDateStatic = (long)(new DateTime(2100, 12, 31, 23, 59, 59)).Subtract(DateTime.Now).TotalMilliseconds;
+
             CreateMap<CreatePointOfDayRequest, PointOfDay>();
             CreateMap<CreatePointDetailRequest, PointDetail>();
             CreateMap<UpdateRank, CreatePointOfDayRequest>();
             CreateMap<UpdateRank, UpdatePointOfDayRequest>();
-            CreateMap<UserRankOfDayIn, RankingResponse>();
+            CreateMap<UserRankOfDayIn, RankingResponse>()
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => DateTime.Now.AddMilliseconds(miliDateStatic - src.DateMiliSecond).ToLocalTime()));
             
         }
     }

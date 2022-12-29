@@ -3,6 +3,7 @@ using FidoDidoGame.Modules.FidoDidos.Entities;
 using FidoDidoGame.Modules.Ranks.Entities;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Persistents.Context;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FidoDidoGame.Persistents.Repositories
 {
@@ -14,9 +15,12 @@ namespace FidoDidoGame.Persistents.Repositories
         IFidoDidoRepository FidoDido { get; }
         IPointOfDayRepository PointOfDay { get; }
         IPointDetailRepository PointDetail { get; }
+
+        void Save();
+        IDbContextTransaction Transaction();
     }
     public interface IUserRepository : IRepositoryBase<User> { }
-    public interface IUserStatusRepository : IRepositoryBase<UserStatus> { }
+    public interface IUserStatusRepository : IRepositoryBase<SpecialStatus> { }
     public interface IFidoRepository : IRepositoryBase<Fido> { }
     public interface IDidoRepository : IRepositoryBase<Dido> { }
     public interface IFidoDidoRepository : IRepositoryBase<FidoDido> { }
@@ -107,6 +111,13 @@ namespace FidoDidoGame.Persistents.Repositories
                 }
                 return pointDetail;
             }
+        }
+
+        public void Save() => context.SaveChanges();
+
+        public IDbContextTransaction Transaction()
+        {
+            return context.Database.BeginTransaction(); 
         }
     }
     public class UserRepository : RepositoryBase<User>, IUserRepository

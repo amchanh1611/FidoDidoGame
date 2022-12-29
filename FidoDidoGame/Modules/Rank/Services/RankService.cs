@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FidoDidoGame.Common.Extensions;
 using FidoDidoGame.Common.Pagination;
 using FidoDidoGame.Modules.Rank.Request;
 using FidoDidoGame.Modules.Rank.Response;
@@ -7,6 +8,7 @@ using FidoDidoGame.Modules.Ranks.Request;
 using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace FidoDidoGame.Modules.Ranks.Services
 {
@@ -15,11 +17,15 @@ namespace FidoDidoGame.Modules.Ranks.Services
         void CreatePointDetail(CreatePointDetailRequest request);
         void UpdateRank(UpdateRank request);
         PaggingResponse<RankingResponse> Ranking(GetRankRequest request);
+        PaggingResponse<UserRankDetailIn> HistoryOf(int userId, HistoryOfRequest request);
+        void UserRank(int userId);
     }
     public class RankService : IRankService
     {
         public const string KeysRankOfDay = "Rank";
         public const string KeyRankDetail = "History";
+
+
 
         private readonly IRedisService redis;
         private readonly IRepository repository;
@@ -35,9 +41,9 @@ namespace FidoDidoGame.Modules.Ranks.Services
         private void CreatePointOfDay(CreatePointOfDayRequest request)
         {
             PointOfDay pointOfDay = repository.PointOfDay.Create(mapper.Map<CreatePointOfDayRequest, PointOfDay>(request));
-            repository.PointOfDay.Save();
+            repository.Save();
 
-            UserRankOfDayIn userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
+            UserRankOfDayIn userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point);
             redis.ZSSet(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
         }
 
@@ -57,9 +63,7 @@ namespace FidoDidoGame.Modules.Ranks.Services
             PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.Id == pointOfDayId).FirstOrDefault()!;
 
             //Remove old member in sortset in Redis if PointOfDay already exist
-            UserRankOfDayIn userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
-
-            Console.WriteLine(userRankOfDayIn.Date);
+            UserRankOfDayIn userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point);
 
             redis.ZSDelete(KeysRankOfDay, userRankOfDayIn);
 
@@ -68,12 +72,10 @@ namespace FidoDidoGame.Modules.Ranks.Services
             pointOfDay.Date = request.Date;
             pointOfDay = repository.PointOfDay.Update(pointOfDay);
 
-            repository.User.Save();
+            repository.Save();
 
             //Update new member in sortset in Redis
-            userRankOfDayIn = new((long)(new DateTime(2100, 12, 31, 23, 59, 59) - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.Date);
-
-            Console.WriteLine(userRankOfDayIn.Date);
+            userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point);
 
             redis.ZSIncre(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
         }
@@ -81,19 +83,49 @@ namespace FidoDidoGame.Modules.Ranks.Services
         public void CreatePointDetail(CreatePointDetailRequest request)
         {
             PointDetail pointDetail = repository.PointDetail.Create(mapper.Map<CreatePointDetailRequest, PointDetail>(request));
-            repository.PointDetail.Save();
+            repository.Save();
 
-            UserRankDetailIn userRankDetailIn = new(pointDetail.Date, request.UserName!, pointDetail.Point, pointDetail.IsX2);
+            UserRankDetailIn userRankDetailIn = new(pointDetail.Date, request.UserName!, pointDetail.Point, pointDetail.IsX2,pointDetail.SpecialStatus);
 
-            redis.ZSSet($"{KeyRankDetail}:User:{pointDetail.UserId}", (int)request.Date.Subtract(DateTime.UtcNow).TotalSeconds, userRankDetailIn);
+            // Lưu score là Timestamp phải lấy thời gian cố định (DateStatic) trừ đi, lúc lấy ra hay so sánh cũng phải dùng DateStatic mới chính xác
+            redis.ZSSet($"{KeyRankDetail}:User:{pointDetail.UserId}", (long)Helper.DateStatic.Subtract(pointDetail.Date).TotalMilliseconds, userRankDetailIn);
         }
 
         public PaggingResponse<RankingResponse> Ranking(GetRankRequest request)
         {
             List<UserRankOfDayIn> values = redis.ZSGet<UserRankOfDayIn>(KeysRankOfDay);
+
             return mapper.Map<List<UserRankOfDayIn>, List<RankingResponse>>(values)
-                .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd).AsQueryable()
-                .ApplyPagging(request.Current, request.PageSize); 
+                .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd)
+                .GroupBy(key => key.UserName)
+                .Select(grp => new RankingResponse { UserName = grp.Key, Point = grp.Sum(x => x.Point), Date = grp.Select(x=>x.Date).LastOrDefault() }).AsQueryable().ApplyPagging(request.Current, request.PageSize);
+
+            //return mapper.Map<List<UserRankOfDayIn>, List<RankingResponse>>(values)
+            //    .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd)
+            //    .GroupBy(key => key.UserName)
+            //    .Select(grp => grp.ToList()).AsQueryable().ApplyPagging(request.Current, request.PageSize);
+        }
+
+        public PaggingResponse<UserRankDetailIn> HistoryOf(int userId, HistoryOfRequest request)
+        {
+            //Convert DateTime to timestamp 
+            /// <Sumary>
+            /// Lấy time cố định trừ cho DateTime request 
+            /// </Sumary>
+            long dateStart = (long)Helper.DateStatic.Subtract(request.DateStart!.Value).TotalMilliseconds;
+            long dateEnd = (long)Helper.DateStatic.Subtract(request.DateEnd!.Value).TotalMilliseconds;
+
+
+            ///<summary>
+            /// Convert to timestamp thì DateEnd sẽ bé hơn DateStart nên truyền vào min = dateEnd, max = dateStart
+            ///</summary>
+            return redis.ZSGetByScores<UserRankDetailIn>($"{KeyRankDetail}:User:{userId}",dateEnd, dateStart).AsQueryable()
+                .ApplyPagging(request.Current, request.PageSize);
+        }
+        public void UserRank(int userId)
+        {
+            PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.UserId == userId).Include(x=>x.User).FirstOrDefault()!;
+            var a = redis.ZsGetRank(KeysRankOfDay, new UserRankOfDayIn((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, pointOfDay.User!.Name!, pointOfDay.Point));
         }
     }
 }

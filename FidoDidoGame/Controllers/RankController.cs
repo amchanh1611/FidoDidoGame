@@ -20,5 +20,16 @@ namespace FidoDidoGame.Controllers
         {
             return Ok(service.Ranking(request));
         }
+        [HttpGet("History/User/{userId}")]
+        public IActionResult HistoryOf([FromRoute] int userId, [FromQuery] HistoryOfRequest request)
+        {
+            return Ok(service.HistoryOf(userId, request));
+        }
+        [HttpGet("UserRank/{userId}")]
+        public IActionResult UserRank([FromRoute] int userId)
+        {
+            service.UserRank(userId);
+            return Ok();
+        }
     }
 }
