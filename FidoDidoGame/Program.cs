@@ -41,6 +41,16 @@ builder.Services.AddHangfire
         new MySqlStorageOptions())));
 builder.Services.AddHangfireServer(options => configure.GetSection("HangfireSettings:Server").Bind(options));
 
+//Authenticate
+builder.Services.AddAuthentication()
+    .AddFacebook(options =>
+    {
+        options.AppId = configure["Appsettings:Facbook:AppId"];
+        options.AppSecret = configure["Appsettings:Facbook:AppSecret"];
+        options.SaveTokens = true;
+        options.CallbackPath = "/api/Users/FaceBookOauth";
+    });
+
 //HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 

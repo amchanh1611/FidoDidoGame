@@ -9,3 +9,7 @@ https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
 https://developers.facebook.com/docs/permissions/reference
 
 https://developers.facebook.com/community/threads/161027219200706/?locale=vi_VN  lieen quan den refresh
+
+
+https://charlehsin.github.io/coding/dotnet5/2021/11/19/oauth2-in-aspnet5-webapi.html xample
+https://steemit.com/utopian-io/@babelek/how-to-create-facebook-login-in-asp-net-core-web-api
