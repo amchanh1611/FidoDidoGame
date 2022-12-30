@@ -21,6 +21,13 @@ PointDetail phải lưu cả khi trúng những trạng thái đặc biệt????
 => để rõ ràng hơn, nếu lở như ngta nói ngày đó, lần đó người ta trúng điểm tại sao không cộng điểm cho người ta, thì mình có cái để mà nói 
 cho người ta biết
 
-2022-12-25 00:00:00
+3000 giai
+1 nhat
+2 nhi 
+3 ba 
+=> khuyen khich
 
-2022-12-30 00:00:00
+30 31 1 | 2 3 4 5 | 6 7 8 9 | 10 11 12 13 14 15 16 17|
+top 3000 nguoi chia dung phan thuong cho nhung nguoi do theo tuan do
+
+1 API lay qua cua toi (qua gi, dot nao)

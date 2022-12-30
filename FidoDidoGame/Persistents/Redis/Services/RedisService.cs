@@ -68,6 +68,10 @@ namespace FidoDidoGame.Persistents.Redis.Services
             bool check = db.KeyExists(key);
             if (check)
             {
+                //    JsonSerializerOptions AuthAppBuilderExtensions = new JsonSerializerOptions();
+                //    AuthAppBuilderExtensions.Converters.Add(new DateTimeConverter());
+                //    var a = JsonSerializer.Serialize(member, AuthAppBuilderExtensions);
+
                 db.SortedSetRemove(key, JsonSerializer.Serialize(member));
                 return true;
             }
@@ -106,6 +110,9 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         public double ZSIncre<T>(string key, double score, T member)
         {
+            //    JsonSerializerOptions AuthAppBuilderExtensions = new JsonSerializerOptions();
+            //    AuthAppBuilderExtensions.Converters.Add(new DateTimeConverter());
+            //    var a = JsonSerializer.Serialize(member, AuthAppBuilderExtensions);
             return db.SortedSetIncrement(key, JsonSerializer.Serialize(member), score);
         }
 

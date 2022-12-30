@@ -146,12 +146,11 @@ public class FidoDidoService : IFidoDidoService
             //Gets list Dido of Fido
             List<FidoDido> fidoDidos = repository.FidoDido.FindByCondition(x => x.FidoId == user.FidoId).Include(x => x.Dido).OrderBy(x => x.PercentRand).ToList();
 
-            //Gets Dido
-            // <Start>
+            #region Gets Dido
             int number = Helper.Random(0, 100);
 
             FidoDido fidoDido = fidoDidos.Where(x => number < x.PercentRand).FirstOrDefault()!;
-            // </End>
+            #endregion Gets Dido
 
             //Gets Item Date
             DateTime date = DateTime.Now;
