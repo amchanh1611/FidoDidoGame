@@ -32,16 +32,5 @@ namespace FidoDidoGame.Controllers
         {
             return Ok(service.Profile(userId));
         }
-        [HttpGet("UserStatus/Add/{userId}")]
-        public IActionResult AddUserStatus([FromRoute] int userId, [FromQuery] UserStatus status)
-        {
-            service.AddUserStatus(userId, status);
-            return Ok();
-        }[HttpGet("UserStatus/Remove/{userId}")]
-        public IActionResult RemoveUserStatus([FromRoute] int userId, [FromQuery] UserStatus status)
-        {
-            service.DeleteUserStatus(userId, status);
-            return Ok();
-        }
     }
 }

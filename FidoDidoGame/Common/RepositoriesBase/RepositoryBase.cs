@@ -9,13 +9,12 @@ namespace FidoDidoGame.Common.RepositoriesBase
     {
         T Create(T entity);
         T Update(T entity);
+        void UpdateMulti(List<T> entities);
         void Delete(T entity);
         void CreateMulti(List<T> entities);
         void DeleteMulti(List<T> entities);
-        void Save();
         IQueryable<T> FindAll();
         IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression);
-        IDbContextTransaction Transaction();
     }
     public class RepositoryBase<T> : IRepositoryBase<T> where T : class
     {
@@ -39,9 +38,7 @@ namespace FidoDidoGame.Common.RepositoriesBase
 
         public T Update(T entity) => context.Set<T>().Update(entity).Entity;
 
-        public IDbContextTransaction Transaction() => context.Database.BeginTransaction();
-
-        public void Save() => context.SaveChanges();
+        public void UpdateMulti(List<T> entities) => context.Set<T>().UpdateRange(entities);
     }
 
 }

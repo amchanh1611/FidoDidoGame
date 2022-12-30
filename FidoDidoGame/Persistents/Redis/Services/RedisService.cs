@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using FidoDidoGame.Common.DateTimeConverter;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace FidoDidoGame.Persistents.Redis.Services
@@ -12,7 +13,9 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         bool Delete(string key);
 
-        SortedSetEntry[] ZSGet(string key, int start, int end, Order order);
+        List<T> ZSGetByScores<T>(string key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Order order = Order.Ascending, int skip = 0, int take = -1);
+        List<T> ZSGet<T>(string key, int start = 0, int end = -1, Order order = Order.Descending);
+        long? ZsGetRank<T>(string key, T member, Order order = Order.Descending);
 
         double ZSIncre<T>(string key, double score, T member);
 
@@ -48,17 +51,15 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
         public List<T> GetAll<T>(string pattern)
         {
-            RedisKey[] keys = server.Keys(pattern: pattern).ToArray();
+            RedisKey[] keys = server.Keys(pattern: $"*{pattern}*").ToArray();
             RedisValue[] values = db.StringGet(keys);
-            return values.Select(x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
+            return Array.ConvertAll(values, x=> JsonSerializer.Deserialize<T>(x!)).ToList()!;
         }
 
         public bool Set<T>(string key, T obj, params DateTime[] expirationTime)
         {
-            TimeSpan? exp = null;
-            if (expirationTime.Length != 0)
-                 exp = expirationTime[1].Subtract(DateTime.Now);
-                
+            TimeSpan? exp = expirationTime.Length != 0 ? expirationTime[0].Subtract(DateTime.Now) : null;
+
             return db.StringSet(key, JsonSerializer.Serialize(obj), exp);
         }
 
@@ -67,13 +68,28 @@ namespace FidoDidoGame.Persistents.Redis.Services
             bool check = db.KeyExists(key);
             if (check)
             {
+                //    JsonSerializerOptions AuthAppBuilderExtensions = new JsonSerializerOptions();
+                //    AuthAppBuilderExtensions.Converters.Add(new DateTimeConverter());
+                //    var a = JsonSerializer.Serialize(member, AuthAppBuilderExtensions);
+
                 db.SortedSetRemove(key, JsonSerializer.Serialize(member));
                 return true;
             }
             return false;
         }
 
-        public SortedSetEntry[] ZSGet(string key, int start, int end, Order order)
+        public List<T> ZSGet<T>(string key, int start = 0, int end = -1, Order order = Order.Descending)
+        {
+            bool check = db.KeyExists(key);
+            if (check)
+            {
+                RedisValue[] values = db.SortedSetRangeByRank(key, start, end, order);
+                return Array.ConvertAll(values, x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
+            }
+            return default!;
+        }
+
+        public SortedSetEntry[] ZSGetWithScores(string key, int start = 0, int end = -1, Order order = Order.Descending)
         {
             bool check = db.KeyExists(key);
             if (check)
@@ -81,15 +97,33 @@ namespace FidoDidoGame.Persistents.Redis.Services
 
             return default!;
         }
+        public List<T> ZSGetByScores<T>(string key, double min = double.NegativeInfinity, double max = double.PositiveInfinity, Order order = Order.Ascending, int skip = 0, int take = -1)
+        {
+            bool check = db.KeyExists(key);
+            if(check)
+            {
+                RedisValue[] values = db.SortedSetRangeByScore(key, min, max, order: order, skip: skip, take: take);
+                return Array.ConvertAll(values, x => JsonSerializer.Deserialize<T>(x!)).ToList()!;
+            }
+            return default!;
+        }
 
         public double ZSIncre<T>(string key, double score, T member)
         {
+            //    JsonSerializerOptions AuthAppBuilderExtensions = new JsonSerializerOptions();
+            //    AuthAppBuilderExtensions.Converters.Add(new DateTimeConverter());
+            //    var a = JsonSerializer.Serialize(member, AuthAppBuilderExtensions);
             return db.SortedSetIncrement(key, JsonSerializer.Serialize(member), score);
         }
 
         public bool ZSSet<T>(string key, double score, T member)
         {
             return db.SortedSetAdd(key, JsonSerializer.Serialize(member), score);
+        }
+
+        public long? ZsGetRank<T>(string key, T member, Order order = Order.Descending)
+        {
+            return db.SortedSetRank(key, JsonSerializer.Serialize(member), order);
         }
     }
 }

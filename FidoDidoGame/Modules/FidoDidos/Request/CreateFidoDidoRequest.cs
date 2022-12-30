@@ -9,7 +9,8 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
         public int? FidoId { get; set; }
         public int? DidoId { get; set; }
         public int? Percent { get; set; }
-        public string? Point { get; set; }
+        public SpecialStatus? SpecialStatus { get; set; }
+        public int? Point { get; set; }
     }
     public class CreateOrUpdateFido
     {
@@ -25,21 +26,22 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
         public CreateFidoDidoValidator(IRepository repository)
         {
             RuleFor(x => x.FidoId).NotEmpty().WithMessage("{PropertyName} is required")
-                .Must((_, fidoId) =>{ return repository.Fido.FindByCondition(x => x.Id == fidoId).Any(); })
+                .Must((_, fidoId) => { return repository.Fido.FindByCondition(x => x.Id == fidoId).Any(); })
                 .WithMessage("Fido doest not exists in system");
             RuleFor(x => x.DidoId).NotEmpty().WithMessage("{PropertyName} is required")
-                .Must((_, didoId) =>{ return repository.Dido.FindByCondition(x => x.Id == didoId).Any(); })
+                .Must((_, didoId) => { return repository.Dido.FindByCondition(x => x.Id == didoId).Any(); })
                 .WithMessage("Fido doest not exists in system");
             RuleFor(x => x.Percent).NotEmpty().WithMessage("{PropertyName} is required");
             RuleFor(x => x.Point).NotEmpty().WithMessage("{PropertyName} is required");
             RuleFor(x => x).Must((_, request) =>
             {
-                return repository.FidoDido.FindByCondition(x=>x.FidoId == request.FidoId).Sum(x => x.Percent) < 100;
+                return repository.FidoDido.FindByCondition(x => x.FidoId == request.FidoId).Sum(x => x.Percent) < 100;
             }).WithMessage("Invalid percent");
             RuleFor(x => x).Must((_, request) =>
             {
-                return repository.FidoDido.FindByCondition(x=>x.FidoId == request.FidoId).Sum(x => x.Percent) + request.Percent <= 100;
+                return repository.FidoDido.FindByCondition(x => x.FidoId == request.FidoId).Sum(x => x.Percent) + request.Percent <= 100;
             }).WithMessage("Percent greater than 100");
+            RuleFor(x => x.SpecialStatus).NotEmpty().IsInEnum().NotEqual(SpecialStatus.Normal).WithMessage("Invalid {PropertyName}");
         }
     }
     public class CreateOrUpdateFidoValidator : AbstractValidator<CreateOrUpdateFido>
@@ -48,12 +50,8 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
         {
             RuleFor(x => x).Must((_, request) =>
             {
-                return repository.Fido.FindAll().Sum(x => x.Percent) < 100;
+                return repository.Fido.FindAll().Sum(x => x.Percent) <= 100;
             }).WithMessage("Invalid percent");
-            RuleFor(x => x).Must((_, request) =>
-            {
-                return repository.Fido.FindAll().Sum(x => x.Percent) + request.Percent <= 100;
-            }).WithMessage("Percent greater than 100");
         }
     }
     public class CreateFidoValidator : AbstractValidator<CreateFidoRequest>
@@ -63,13 +61,22 @@ namespace FidoDidoGame.Modules.FidoDidos.Request
             RuleFor(x => x.Name).NotEmpty().WithMessage("Invalid {PropertyName}");
             RuleFor(x => x.Percent).NotEmpty().WithMessage("Invalid {PropertyName}");
             RuleFor(x => x).SetValidator(new CreateOrUpdateFidoValidator(repository));
+            RuleFor(x => x).Must((_, request) =>
+            {
+                return repository.Fido.FindAll().Sum(x => x.Percent) + request.Percent <= 100;
+            }).WithMessage("Percent greater than 100");
         }
     }
     public class UpdatePercentFidoValidator : AbstractValidator<UpdateFidoPercentRequest>
     {
-        public UpdatePercentFidoValidator(IRepository repository)
+        public UpdatePercentFidoValidator(IRepository repository, IHttpContextAccessor httpContextAccessor)
         {
-           RuleFor(x => x).SetValidator(new CreateOrUpdateFidoValidator(repository));
+            RuleFor(x => x).SetValidator(new CreateOrUpdateFidoValidator(repository));
+            RuleFor(x => x).Must((_, request) =>
+            {
+                int fidoId = int.Parse(httpContextAccessor.HttpContext!.GetRouteValue("fidoId")!.ToString()!);
+                return repository.Fido.FindByCondition(x=>x.Id != fidoId).Sum(x => x.Percent) + request.Percent <= 100;
+            }).WithMessage("Percent greater than 100");
         }
     }
 }

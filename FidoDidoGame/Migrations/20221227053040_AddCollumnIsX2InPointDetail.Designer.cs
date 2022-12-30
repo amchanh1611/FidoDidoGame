@@ -3,6 +3,7 @@ using System;
 using FidoDidoGame.Persistents.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidoDidoGame.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221227053040_AddCollumnIsX2InPointDetail")]
+    partial class AddCollumnIsX2InPointDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,11 +71,9 @@ namespace FidoDidoGame.Migrations
                     b.Property<int>("PercentRand")
                         .HasColumnType("int");
 
-                    b.Property<int>("Point")
-                        .HasColumnType("int");
-
-                    b.Property<sbyte>("SpecialStatus")
-                        .HasColumnType("tinyint");
+                    b.Property<string>("Point")
+                        .IsRequired()
+                        .HasColumnType("char(9)");
 
                     b.HasKey("FidoId", "DidoId");
 
@@ -98,9 +98,6 @@ namespace FidoDidoGame.Migrations
                     b.Property<string>("Point")
                         .IsRequired()
                         .HasColumnType("char(9)");
-
-                    b.Property<int>("SpecialStatus")
-                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -149,9 +146,6 @@ namespace FidoDidoGame.Migrations
                     b.Property<int?>("FidoId")
                         .HasColumnType("int");
 
-                    b.Property<string>("IdCard")
-                        .HasColumnType("char(15)");
-
                     b.Property<sbyte?>("Male")
                         .HasColumnType("tinyint");
 
@@ -165,6 +159,10 @@ namespace FidoDidoGame.Migrations
 
                     b.Property<string>("Phone")
                         .HasColumnType("char(12)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

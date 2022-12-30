@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Text;
+﻿using System.Text;
 
 namespace FidoDidoGame.Common.Extensions
 {
     public static class Helper
     {
+        public static DateTime DateStatic = new DateTime(2100, 12, 31, 23, 59, 59);
         public static async Task<string> UploadFilesAsync(this IFormFile file, string path)
         {
 
@@ -47,12 +47,15 @@ namespace FidoDidoGame.Common.Extensions
             return Convert.ToBase64String(inputByte).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         }
 
+        //Base64 Decode
+        //
         public static string Base64Decode(this string encodedData)
         {
             byte[] outputByte = Convert.FromBase64String(encodedData.Pad().Replace('-', '+').Replace('_', '/'));
 
             return Encoding.UTF8.GetString(outputByte);
         }
+
         private static string Pad(this string text)
         {
             var padding = 3 - (text.Length + 3) % 4;
@@ -61,6 +64,13 @@ namespace FidoDidoGame.Common.Extensions
                 return text;
             }
             return text + new string('=', padding);
+        }
+        //
+
+        public static int Random(int min, int max)
+        {
+            Random rand = new();
+            return rand.Next(min, max);
         }
     }
 }

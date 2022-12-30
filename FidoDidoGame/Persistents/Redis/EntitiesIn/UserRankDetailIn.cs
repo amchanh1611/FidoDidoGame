@@ -1,19 +1,21 @@
-﻿using System.Text.Json.Serialization;
+﻿using FidoDidoGame.Modules.FidoDidos.Entities;
+using System.Text.Json.Serialization;
 
-namespace FidoDidoGame.Persistents.Redis.Entities
+namespace FidoDidoGame.Persistents.Redis.Entities;
+
+public class UserRankDetailIn
 {
-    public class UserRankDetailIn
+    public DateTime Date { get; set; }
+    public string UserName { get; set; } = default!;
+    public SpecialStatus SpecialStatus { get; set; }
+    public int Point { get; set; }
+    public int IsX2 { get; set; }
+    public UserRankDetailIn(DateTime date, string userName, int point, int isX2, SpecialStatus specialStatus)
     {
-        public DateTime Date { get; set; }
-        public int UserId { get; set; }
-        public string Name { get; set; } = default!;
-        public string Point { get; set; }
-        public UserRankDetailIn(DateTime date, int userId, string name, string point)
-        {
-            Date = date;
-            UserId = userId;
-            Name = name;
-            Point = point;
-        }
+        Date = date;
+        UserName = userName;
+        Point = point;
+        IsX2 = isX2;
+        SpecialStatus = specialStatus;
     }
 }
