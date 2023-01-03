@@ -1,11 +1,14 @@
 ﻿using FidoDidoGame.Persistents.Repositories;
 using FluentValidation;
+using System.Text.Json.Serialization;
 
 namespace FidoDidoGame.Modules.Users.Request
 {
     public class CreateUserRequest
     {
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
+        [JsonPropertyName("name")]
         public string? NickName { get; set; }
     }
     public class UpdateUserRequest

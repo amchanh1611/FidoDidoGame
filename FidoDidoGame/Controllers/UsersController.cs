@@ -4,6 +4,8 @@ using FidoDidoGame.Modules.Users.Services;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FidoDidoGame.Controllers
 {
@@ -34,36 +36,19 @@ namespace FidoDidoGame.Controllers
         {
             return Ok(service.Profile(userId));
         }
+
+        //[AllowAnonymous]
         [HttpGet("FacebookOauth")]
-        public async Task<IActionResult> FacbookLoginAsync()
+        public IActionResult FacbookLogin()
         {
-            string? authScheme = FacebookDefaults.AuthenticationScheme;
-
-            // Try to authenticate.
-            AuthenticateResult authResult = await Request.HttpContext.AuthenticateAsync(authScheme);
-            if (!authResult.Succeeded
-                || authResult?.Principal == null
-                || !authResult.Principal.Identities.Any(id => id.IsAuthenticated)
-                || string.IsNullOrEmpty(authResult.Properties.GetTokenValue("access_token")))
-            {
-                // Challenge the Facebook OAuth 2.0 provider.
-                await Request.HttpContext.ChallengeAsync(authScheme, new AuthenticationProperties
-                {
-                    AllowRefresh = true,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1),
-                    IssuedUtc = DateTimeOffset.UtcNow,
-                    // We provide this API's own path here so that the final redirection can go
-                    // to this method.
-                    RedirectUri = Url.Action("FacbookLoginAsync")
-                });
-
-                // Get the location response header.
-                if (Response.Headers.TryGetValue("location", out var locationResponseHeader))
-                {
-                    return Redirect(locationResponseHeader);
-                }
-                return Unauthorized();
-            }
+            AuthenticationProperties properties = new () { RedirectUri = Url.Action("FaceBookRedirect") };
+            return Challenge(properties, FacebookDefaults.AuthenticationScheme);
+        }
+        [HttpGet("FacebookOauthRedirect")]
+        public async Task<IActionResult> FaceBookRedirectAsync()
+        {
+            AuthenticateResult authResult = await Request.HttpContext.AuthenticateAsync(FacebookDefaults.AuthenticationScheme);
+            var claim = authResult.Principal!.Claims;
             return Ok();
         }
     }

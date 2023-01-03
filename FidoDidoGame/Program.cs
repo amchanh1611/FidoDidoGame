@@ -11,6 +11,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.MySql;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -42,14 +43,22 @@ builder.Services.AddHangfire
 builder.Services.AddHangfireServer(options => configure.GetSection("HangfireSettings:Server").Bind(options));
 
 //Authenticate
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/api/Users/FacebookOauth";
+    })
     .AddFacebook(options =>
     {
-        options.AppId = configure["Appsettings:Facbook:AppId"];
-        options.AppSecret = configure["Appsettings:Facbook:AppSecret"];
+        options.AppId = configure["Appsettings:Authentication:Facebook:AppId"];
+        options.AppSecret = configure["Appsettings:Authentication:Facebook:AppSecret"];
         options.SaveTokens = true;
-        options.CallbackPath = "/api/Users/FaceBookOauth";
+        //options.CallbackPath = "/api/Users/FacebookOauthRedirect";
     });
+
 
 //HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
@@ -85,12 +94,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.UseStaticFiles();
+
 //ErorHandlerMiddleware
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
