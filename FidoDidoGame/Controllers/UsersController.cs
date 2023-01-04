@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using System.Security.Claims;
 
 namespace FidoDidoGame.Controllers
 {
@@ -48,7 +50,31 @@ namespace FidoDidoGame.Controllers
         public async Task<IActionResult> FaceBookRedirectAsync()
         {
             AuthenticateResult authResult = await Request.HttpContext.AuthenticateAsync(FacebookDefaults.AuthenticationScheme);
-            var claim = authResult.Principal!.Claims;
+
+            long userId = long.Parse(authResult.Principal!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (service.FindById(userId))
+            {
+                string accessToken = authResult.Properties!.GetTokenValue("access_token")!;
+
+                #region Get Picture 
+                using HttpClient client = new();
+
+                HttpResponseMessage pictureResponse = await client.GetAsync($"{FacebookDefaults.UserInformationEndpoint}/picture?redirect&access_token={accessToken}&height=720");
+
+                string pictureContent = await pictureResponse.Content.ReadAsStringAsync();
+                PictureInfo picture = JsonSerializer.Deserialize<PictureInfo>(pictureContent)!;
+                #endregion
+
+                CreateUserRequest request = new()
+                {
+                    Id = userId,
+                    Name = authResult.Principal!.FindFirst(ClaimTypes.Name)!.Value,
+                    NickName = authResult.Principal!.FindFirst(ClaimTypes.Name)!.Value,
+                    Avatar = picture.Data!.Url
+                };
+            }
+
             return Ok();
         }
     }

@@ -6,10 +6,21 @@ namespace FidoDidoGame.Modules.Users.Request
 {
     public class CreateUserRequest
     {
-        [JsonPropertyName("name")]
+        public long? Id { get; set; }
         public string? Name { get; set; }
-        [JsonPropertyName("name")]
         public string? NickName { get; set; }
+        public string? Avatar { get; set; }
+
+    }
+    public class PictureInfo
+    {
+        [JsonPropertyName("data")]
+        public Data? Data { get; set; }
+    }
+    public class Data
+    {
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
     }
     public class UpdateUserRequest
     {

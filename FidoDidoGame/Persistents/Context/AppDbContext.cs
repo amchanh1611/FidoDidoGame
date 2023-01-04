@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
         {
             builder.ToTable(nameof(User).Underscore());
             builder.HasKey(x => x.Id);
+            builder.Property(x=>x.Id).ValueGeneratedNever();
             builder.Property(x => x.Name).HasColumnType("text");
             builder.Property(x => x.NickName).HasColumnType("text");
             builder.Property(x => x.Phone).HasColumnType("char(12)");
