@@ -2,9 +2,12 @@
 using FidoDidoGame.Common.Jwt;
 using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Entities;
+using FidoDidoGame.Modules.FidoDidos.Service;
+using FidoDidoGame.Modules.Ranks.Services;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Request;
 using FidoDidoGame.Modules.Users.Response;
+using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -28,12 +31,14 @@ public class UserService : IUserService
     private readonly IRepository repository;
     private readonly IMapper mapper;
     private readonly IJwtServices jwt;
+    
     public UserService(IRepository repository, IMapper mapper, IRedisService redis, IJwtServices jwt)
     {
         this.repository = repository;
         this.mapper = mapper;
         this.redis = redis;
         this.jwt = jwt;
+        this.fidoDidoService = fidoDidoService;
     }
 
     public void Create(CreateUserRequest request)
@@ -70,14 +75,14 @@ public class UserService : IUserService
     {
         User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
 
-        string refreshToken = jwt.GenerateRefreshToken();
+        if(user.RefreshToken is null)
+        {
+            user.RefreshToken = jwt.GenerateRefreshToken();
+            user = repository.User.Update(user);
+            repository.Save();
+        }
 
-        user.RefreshToken = refreshToken;
-
-        repository.User.Update(user);
-        repository.Save();
-
-        return new JwtTokenResponse { AccessToken = jwt.GenerateAccessToken(user), RefreshToken = refreshToken };
+        return new JwtTokenResponse { AccessToken = jwt.GenerateAccessToken(user), RefreshToken = user.RefreshToken };
     }
 
     public User Profile(long userId)
@@ -89,6 +94,12 @@ public class UserService : IUserService
     {
         User user = repository.User.FindByCondition(x => x.RefreshToken == refreshToken).FirstOrDefault()!;
 
+        if (user.RefreshToken is null)
+            throw new BadRequestException("Unauthorize");
+
+        if (!jwt.ValidateJwtToken(user.RefreshToken))
+            throw new BadRequestException("Token has expired");
+
         return jwt.GenerateAccessToken(user);
     }
 
@@ -97,5 +108,11 @@ public class UserService : IUserService
         User? user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault();
         repository.User.Update(mapper.Map(request, user!));
         repository.Save();
+    }
+    public void GetReward()
+    {
+        List<UserRankOfDayIn> rank = redis.ZSGet<UserRankOfDayIn>(RankService.KeysRankOfDay);
+
+        repository.Reward.Create(new Reward(rank[0].UserId, Award.First,))
     }
 }

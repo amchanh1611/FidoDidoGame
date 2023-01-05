@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
             builder.Property(x => x.Male).HasColumnType("tinyint");
             builder.Property(x => x.IdCard).HasColumnType("char(15)");
             builder.Property(x => x.Avatar).HasColumnType("text");
+            builder.Property(x => x.RefreshToken).HasColumnType("text");
             builder.HasOne(x => x.Fido)
             .WithMany(x => x.Users)
             .HasForeignKey(x => x.FidoId);
@@ -61,6 +62,15 @@ public class AppDbContext : DbContext
             builder.Property(x => x.IsX2).HasColumnType("char(9)");
             builder.HasOne(x => x.User)
             .WithMany(x => x.PointDetails)
+            .HasForeignKey(x => x.UserId);
+        });
+        modelBuilder.Entity<Reward>(builder =>
+        {
+            builder.ToTable(nameof(Reward).Underscore());
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Award).HasColumnType("tinyint");
+            builder.HasOne(x => x.User)
+            .WithMany(x => x.Rewards)
             .HasForeignKey(x => x.UserId);
         });
     }

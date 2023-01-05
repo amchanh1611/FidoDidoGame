@@ -15,10 +15,12 @@ namespace FidoDidoGame.Persistents.Repositories
         IFidoDidoRepository FidoDido { get; }
         IPointOfDayRepository PointOfDay { get; }
         IPointDetailRepository PointDetail { get; }
+        IRewardRepository Reward { get; }
 
         void Save();
         IDbContextTransaction Transaction();
     }
+    public interface IRewardRepository : IRepositoryBase<Reward> { }
     public interface IUserRepository : IRepositoryBase<User> { }
     public interface IUserStatusRepository : IRepositoryBase<SpecialStatus> { }
     public interface IFidoRepository : IRepositoryBase<Fido> { }
@@ -41,6 +43,8 @@ namespace FidoDidoGame.Persistents.Repositories
         private IFidoDidoRepository? fidoDido;
         private IPointOfDayRepository? pointOfDay;
         private IPointDetailRepository? pointDetail;
+        private IRewardRepository? reward;
+
         public IUserRepository User
         {
             get
@@ -113,6 +117,18 @@ namespace FidoDidoGame.Persistents.Repositories
             }
         }
 
+        public IRewardRepository Reward
+        {
+            get
+            {
+                if(reward is null)
+                {
+                    reward = new RewardRepository(context);
+                }
+                return reward;
+            }
+        }
+
         public void Save() => context.SaveChanges();
 
         public IDbContextTransaction Transaction()
@@ -148,7 +164,10 @@ namespace FidoDidoGame.Persistents.Repositories
     }
     public class PointDetailRepository : RepositoryBase<PointDetail>, IPointDetailRepository
     {
-        public PointDetailRepository(AppDbContext context) : base(context)
-        { }
+        public PointDetailRepository(AppDbContext context) : base(context) { }
+    }
+    public class RewardRepository : RepositoryBase<Reward>, IRewardRepository
+    {
+        public RewardRepository(AppDbContext context) : base(context) { }
     }
 }

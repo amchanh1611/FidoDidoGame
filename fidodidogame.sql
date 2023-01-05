@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 29, 2022 at 04:34 PM
+-- Generation Time: Jan 05, 2023 at 03:12 PM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -120,16 +120,17 @@ INSERT INTO `point_of_day` (`Id`, `UserId`, `Point`, `Date`) VALUES
 --
 
 INSERT INTO `server` (`Id`, `Data`, `LastHeartbeat`) VALUES
-('a0362055-baa3-47b2-96b2-edca7731645c', '{\"WorkerCount\":5,\"Queues\":[\"default\",\"default\",\"notdefault\"],\"StartedAt\":\"2022-12-29T15:31:28.6305551Z\"}', '2022-12-29 15:32:29.067896');
+('55c1de92-f2c6-417a-82ac-8cdc26824cf9', '{\"WorkerCount\":5,\"Queues\":[\"default\",\"default\",\"notdefault\"],\"StartedAt\":\"2023-01-04T13:49:44.5603464Z\"}', '2023-01-04 13:50:45.185739');
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `Male`, `Avatar`, `FidoId`, `IdCard`) VALUES
-(1, 'Âu Minh Chánh', 'MinhChanh', NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'Âu Minh', 'Minh', NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 'Âu Chanh', 'ChanhChanh', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `Male`, `Avatar`, `FidoId`, `IdCard`, `RefreshToken`) VALUES
+(1, 'Âu Minh Chánh', 'MinhChanh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 'Âu Minh', 'Minh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 'Âu Chanh', 'ChanhChanh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(177966851518295, 'Minh Chánh', 'Minh Chánh', NULL, NULL, NULL, 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=177966851518295&height=720&ext=1675432202&hash=AeQ7m7Ow3Ms3gzxO7Us', NULL, NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzI4NDAyMjIsImV4cCI6MTY3MzQ0NTAyMiwiaWF0IjoxNjcyODQwMjIyLCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.2pmxXU6K_q20ALb7ivVSCB63Pag9GwZGE-PeNVloSGI');
 
 --
 -- Dumping data for table `__efmigrationshistory`
@@ -142,7 +143,13 @@ INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
 ('20221224052111_MergeUserStatusToUserAndEditColumnType', '6.0.11'),
 ('20221226033442_ChangeTypePointDetailToString', '6.0.11'),
 ('20221227053040_AddCollumnIsX2InPointDetail', '6.0.11'),
-('20221229050348_EditModelFidoDido', '6.0.11');
+('20221229050348_EditModelFidoDido', '6.0.11'),
+('20230104040557_DisableAutoIncrementUserId', '6.0.11'),
+('20230104050232_ChangeTypeUserId', '6.0.11'),
+('20230104134634_AddColumnRefreshTokenInUser', '6.0.11'),
+('20230104134803_ChangeTypeColumnRefreshTokenInUser', '6.0.11'),
+('20230104134827_ChangeTypeColumnRefreshTokenInUser1', '6.0.11'),
+('20230105135151_AddModelReward', '6.0.11');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

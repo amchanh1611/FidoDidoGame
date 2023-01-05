@@ -19,6 +19,7 @@ namespace FidoDidoGame.Modules.Users.Entities
         public string? RefreshToken { get; set; }
         public ICollection<PointOfDay>? PointOfDays { get; set; }
         public ICollection<PointDetail>? PointDetails { get; set; }
+        public ICollection<Reward>? Rewards { get; set; }
     }
     public enum UserMale
     {

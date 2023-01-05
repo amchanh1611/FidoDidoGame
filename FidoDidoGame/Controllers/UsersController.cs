@@ -53,7 +53,8 @@ namespace FidoDidoGame.Controllers
 
             long userId = long.Parse(authResult.Principal!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            if (service.FindById(userId))
+            #region if user doestn't exists, create new user 
+            if (!service.FindById(userId))
             {
                 string accessToken = authResult.Properties!.GetTokenValue("access_token")!;
 
@@ -73,9 +74,17 @@ namespace FidoDidoGame.Controllers
                     NickName = authResult.Principal!.FindFirst(ClaimTypes.Name)!.Value,
                     Avatar = picture.Data!.Url
                 };
-            }
 
-            return Ok();
+                service.Create(request);
+            }
+            #endregion
+
+            return Ok(service.JwtGenerateToken(userId));
+        }
+        [HttpPost("RefreshToken")]
+        public IActionResult RefreshToken([FromBody] string refreshToken)
+        {
+            return Ok(service.RefreshToken(refreshToken));
         }
     }
 }

@@ -21,6 +21,8 @@ PointDetail phải lưu cả khi trúng những trạng thái đặc biệt????
 => để rõ ràng hơn, nếu lở như ngta nói ngày đó, lần đó người ta trúng điểm tại sao không cộng điểm cho người ta, thì mình có cái để mà nói 
 cho người ta biết
 
+nên chia reward ra 1 bảng riêng chứ không nên gộp chung cho user luôn???? vì cần phải biết nó có quà gì và đợt nào nữa
+
 3000 giai
 1 nhat
 2 nhi 

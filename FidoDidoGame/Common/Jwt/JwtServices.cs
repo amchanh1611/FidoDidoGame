@@ -51,7 +51,7 @@ public class JwtServices : IJwtServices
         SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = appSettings.Jwt.Issuer,
-            Expires = DateTime.UtcNow.AddMonths(6),
+            Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -71,7 +71,6 @@ public class JwtServices : IJwtServices
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
                 ValidIssuer = appSettings.Jwt.Issuer,
                 ValidateAudience = false,
                 // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
