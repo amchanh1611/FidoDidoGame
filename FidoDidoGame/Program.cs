@@ -1,4 +1,6 @@
 using AutoMapper;
+using FidoDidoGame.AppSetting;
+using FidoDidoGame.Common.Jwt;
 using FidoDidoGame.Mapping;
 using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Service;
@@ -11,8 +13,12 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.MySql;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +47,39 @@ builder.Services.AddHangfire
         new MySqlStorageOptions())));
 builder.Services.AddHangfireServer(options => configure.GetSection("HangfireSettings:Server").Bind(options));
 
+// configure strongly typed settings object
+builder.Services.Configure<AppSettings>(configure.GetSection("AppSettings"));
+
+//Authenticate
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configure["Appsettings:Jwt:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Appsettings:Jwt:AccessKey"])),
+            ClockSkew = TimeSpan.Zero
+        };
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/api/Users/FacebookOauth";
+    })
+    .AddFacebook(options =>
+    {
+        options.AppId = configure["Appsettings:Authentication:Facebook:AppId"];
+        options.AppSecret = configure["Appsettings:Authentication:Facebook:AppSecret"];
+        options.SaveTokens = true;
+    });
+
+
 //HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
@@ -65,6 +104,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IFidoDidoService, FidoDidoService>();
 builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IRankService, RankService>();
+builder.Services.AddScoped<IJwtServices, JwtServices>();
 
 var app = builder.Build();
 
@@ -75,12 +115,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.UseStaticFiles();
+
 //ErorHandlerMiddleware
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 

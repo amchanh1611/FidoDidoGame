@@ -6,7 +6,7 @@ namespace FidoDidoGame.Modules.Users.Entities
 {
     public class User
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Name { get; set; } = default!;
         public string NickName { get; set; } = default!;
         public string? Phone { get; set; }
@@ -16,8 +16,10 @@ namespace FidoDidoGame.Modules.Users.Entities
         public string? Avatar { get; set; } = default!;
         public int? FidoId { get; set; }
         public Fido? Fido { get; set; }
+        public string? RefreshToken { get; set; }
         public ICollection<PointOfDay>? PointOfDays { get; set; }
         public ICollection<PointDetail>? PointDetails { get; set; }
+        public ICollection<Reward>? Rewards { get; set; }
     }
     public enum UserMale
     {
