@@ -1,6 +1,8 @@
 ﻿using FidoDidoGame.Modules.FidoDidos.Request;
 using FidoDidoGame.Modules.FidoDidos.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FidoDidoGame.Controllers
 {
@@ -32,15 +34,17 @@ namespace FidoDidoGame.Controllers
             service.CreateFidoDido(request);
             return Ok();
         }
-        [HttpGet("Fido/{userId}")]
-        public IActionResult Fido([FromRoute] int userId)
+        [HttpGet("Fido"), Authorize]
+        public IActionResult Fido()
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.Fido(userId));
         }
 
-        [HttpGet("Dido/{userId}")]
-        public IActionResult Dido([FromRoute] int userId)
+        [HttpGet("Dido"), Authorize]
+        public IActionResult Dido()
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.Dido(userId));
         }
 

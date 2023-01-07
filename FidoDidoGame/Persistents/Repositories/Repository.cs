@@ -1,5 +1,6 @@
 ﻿using FidoDidoGame.Common.RepositoriesBase;
 using FidoDidoGame.Modules.FidoDidos.Entities;
+using FidoDidoGame.Modules.Rank.Entities;
 using FidoDidoGame.Modules.Ranks.Entities;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Persistents.Context;
@@ -16,10 +17,13 @@ namespace FidoDidoGame.Persistents.Repositories
         IPointOfDayRepository PointOfDay { get; }
         IPointDetailRepository PointDetail { get; }
         IRewardRepository Reward { get; }
+        IEventRepository Event { get; }
 
         void Save();
         IDbContextTransaction Transaction();
     }
+
+    public interface IEventRepository : IRepositoryBase<Event> { }
     public interface IRewardRepository : IRepositoryBase<Reward> { }
     public interface IUserRepository : IRepositoryBase<User> { }
     public interface IUserStatusRepository : IRepositoryBase<SpecialStatus> { }
@@ -28,6 +32,7 @@ namespace FidoDidoGame.Persistents.Repositories
     public interface IFidoDidoRepository : IRepositoryBase<FidoDido> { }
     public interface IPointOfDayRepository : IRepositoryBase<PointOfDay> { }
     public interface IPointDetailRepository : IRepositoryBase<PointDetail> { }
+
     public class Repository : IRepository
     {
         private readonly AppDbContext context;
@@ -44,6 +49,19 @@ namespace FidoDidoGame.Persistents.Repositories
         private IPointOfDayRepository? pointOfDay;
         private IPointDetailRepository? pointDetail;
         private IRewardRepository? reward;
+        private IEventRepository events;
+
+        public IEventRepository Event
+        {
+            get
+            {
+                if(events is null)
+                {
+                    events = new EventRepository(context);
+                }
+                return events;
+            }
+        }
 
         public IUserRepository User
         {
@@ -136,6 +154,12 @@ namespace FidoDidoGame.Persistents.Repositories
             return context.Database.BeginTransaction(); 
         }
     }
+
+    public class EventRepository : RepositoryBase<Event>, IEventRepository
+    {
+        public EventRepository(AppDbContext context) : base(context) { }
+    }
+
     public class UserRepository : RepositoryBase<User>, IUserRepository
     {
         public UserRepository(AppDbContext context) : base(context)
@@ -152,7 +176,7 @@ namespace FidoDidoGame.Persistents.Repositories
         public DidoRepository(AppDbContext context) : base(context)
         { }
     }
-    public class FidoDidoRepository : RepositoryBase<Modules.FidoDidos.Entities.FidoDido>, IFidoDidoRepository
+    public class FidoDidoRepository : RepositoryBase<FidoDido>, IFidoDidoRepository
     {
         public FidoDidoRepository(AppDbContext context) : base(context)
         { }

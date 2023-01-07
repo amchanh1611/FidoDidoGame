@@ -4,7 +4,7 @@ namespace FidoDidoGame.Modules.Rank.Request
 {
     public class CreatePointDetailRequest
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         public string? UserName { get; set; }
 
@@ -16,7 +16,7 @@ namespace FidoDidoGame.Modules.Rank.Request
 
         public int? IsX2 { get; set; }
 
-        public CreatePointDetailRequest(int userId, string? userName, int? point, DateTime date, int? isX2, SpecialStatus specialStatus)
+        public CreatePointDetailRequest(long userId, string? userName, int? point, DateTime date, int? isX2, SpecialStatus specialStatus)
         {
             UserId = userId;
             UserName = userName;

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using System.Security.Claims;
+using Hangfire;
 
 namespace FidoDidoGame.Controllers
 {
@@ -16,10 +17,12 @@ namespace FidoDidoGame.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService service;
+        private readonly IBackgroundJobClient hangfire;
 
-        public UsersController(IUserService service)
+        public UsersController(IUserService service, IBackgroundJobClient hangfire)
         {
             this.service = service;
+            this.hangfire = hangfire;
         }
         [HttpPost]
         public IActionResult Create([FromBody] CreateUserRequest request)
@@ -33,13 +36,13 @@ namespace FidoDidoGame.Controllers
             service.Update(userId, request);
             return Ok();
         }
-        [HttpGet("Profile/{userId}")]
-        public IActionResult Profile([FromRoute] int userId, [FromQuery] ProfilesRequest request)
+        [HttpGet("Profile"), Authorize]
+        public IActionResult Profile([FromQuery] ProfilesRequest request)
         {
+            int userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.Profile(userId));
         }
 
-        //[AllowAnonymous]
         [HttpGet("FacebookOauth")]
         public IActionResult FacbookLogin()
         {
@@ -85,6 +88,13 @@ namespace FidoDidoGame.Controllers
         public IActionResult RefreshToken([FromBody] string refreshToken)
         {
             return Ok(service.RefreshToken(refreshToken));
+        }
+        [HttpGet("Reward")]
+        public IActionResult GetReward()
+        {
+            
+            service.GetReward();
+            return Ok();
         }
     }
 }

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidoDidoGame.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230105135151_AddModelReward")]
-    partial class AddModelReward
+    [Migration("20230106025207_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -142,9 +142,8 @@ namespace FidoDidoGame.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Award")
-                        .IsRequired()
-                        .HasColumnType("varchar(12)");
+                    b.Property<sbyte>("Award")
+                        .HasColumnType("tinyint");
 
                     b.Property<DateTime>("DateEnd")
                         .HasColumnType("datetime(6)");

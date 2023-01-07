@@ -1,4 +1,5 @@
 ﻿using FidoDidoGame.Modules.FidoDidos.Entities;
+using FidoDidoGame.Modules.Rank.Entities;
 using FidoDidoGame.Modules.Ranks.Entities;
 using FidoDidoGame.Modules.Users.Entities;
 using Humanizer;
@@ -72,6 +73,11 @@ public class AppDbContext : DbContext
             builder.HasOne(x => x.User)
             .WithMany(x => x.Rewards)
             .HasForeignKey(x => x.UserId);
+        });
+        modelBuilder.Entity<Event>(builder =>
+        {
+            builder.ToTable(nameof(Event).Underscore());
+            builder.HasKey(x => x.Id);
         });
     }
 }

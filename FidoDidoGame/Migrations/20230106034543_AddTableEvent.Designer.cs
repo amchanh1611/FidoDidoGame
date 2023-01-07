@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FidoDidoGame.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230104134827_ChangeTypeColumnRefreshTokenInUser1")]
-    partial class ChangeTypeColumnRefreshTokenInUser1
+    [Migration("20230106034543_AddTableEvent")]
+    partial class AddTableEvent
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -84,6 +84,26 @@ namespace FidoDidoGame.Migrations
                     b.ToTable("fido_dido", (string)null);
                 });
 
+            modelBuilder.Entity("FidoDidoGame.Modules.Rank.Entities.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Round")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("event", (string)null);
+                });
+
             modelBuilder.Entity("FidoDidoGame.Modules.Ranks.Entities.PointDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -134,6 +154,31 @@ namespace FidoDidoGame.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("point_of_day", (string)null);
+                });
+
+            modelBuilder.Entity("FidoDidoGame.Modules.Users.Entities.Reward", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<sbyte>("Award")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("reward", (string)null);
                 });
 
             modelBuilder.Entity("FidoDidoGame.Modules.Users.Entities.User", b =>
@@ -218,6 +263,17 @@ namespace FidoDidoGame.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FidoDidoGame.Modules.Users.Entities.Reward", b =>
+                {
+                    b.HasOne("FidoDidoGame.Modules.Users.Entities.User", "User")
+                        .WithMany("Rewards")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FidoDidoGame.Modules.Users.Entities.User", b =>
                 {
                     b.HasOne("FidoDidoGame.Modules.FidoDidos.Entities.Fido", "Fido")
@@ -244,6 +300,8 @@ namespace FidoDidoGame.Migrations
                     b.Navigation("PointDetails");
 
                     b.Navigation("PointOfDays");
+
+                    b.Navigation("Rewards");
                 });
 #pragma warning restore 612, 618
         }

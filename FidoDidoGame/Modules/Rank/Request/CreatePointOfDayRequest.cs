@@ -2,7 +2,7 @@
 {
     public class CreatePointOfDayRequest : CreateOrUpdatePointOfDay
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
     }
     public class UpdatePointOfDayRequest : CreateOrUpdatePointOfDay
     {

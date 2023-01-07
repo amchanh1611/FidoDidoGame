@@ -22,8 +22,8 @@ public interface IFidoDidoService
     void CreateMultiDido(List<string> didoNames);
     void CreateFidoDido(CreateFidoDidoRequest request);
     void UpdateFidoPercent(int fidoId, UpdateFidoPercentRequest request);
-    FidoResponse Fido(int userId);
-    DidoResponse Dido(int userId);
+    FidoResponse Fido(long userId);
+    DidoResponse Dido(long userId);
 }
 public class FidoDidoService : IFidoDidoService
 {
@@ -72,12 +72,17 @@ public class FidoDidoService : IFidoDidoService
         repository.Save();
     }
 
-    public FidoResponse Fido(int userId)
+    public FidoResponse Fido(long userId)
     {
-        User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
 
         //Use Redis gets user status
         List<SpecialStatus> userStatus = userService.GetUserStatuses(userId);
+
+        if (userStatus.Where(x => x is SpecialStatus.Ban).Any())
+            throw new BadRequestException("User is banned");
+
+        User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
+
 
         //Gets list dido 
         List<Fido> fidos = repository.Fido.FindAll().OrderBy(x => x.PercentRand).ToList();
@@ -129,7 +134,7 @@ public class FidoDidoService : IFidoDidoService
         repository.Save();
     }
 
-    public DidoResponse Dido(int userId)
+    public DidoResponse Dido(long userId)
     {
         using IDbContextTransaction transaction = repository.Transaction();
         try
@@ -152,7 +157,7 @@ public class FidoDidoService : IFidoDidoService
             FidoDido fidoDido = fidoDidos.Where(x => number < x.PercentRand).FirstOrDefault()!;
             #endregion Gets Dido
 
-            //Gets Item Date
+            //Date Gets Item 
             DateTime date = DateTime.Now;
 
             //Create a object point used to store point

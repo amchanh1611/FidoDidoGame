@@ -8,6 +8,7 @@ using FidoDidoGame.Modules.Ranks.Entities;
 using FidoDidoGame.Modules.Rank.Request;
 using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Modules.Rank.Response;
+using FidoDidoGame.Modules.Rank.Entities;
 
 namespace FidoDidoGame.Mapping
 {
@@ -32,8 +33,12 @@ namespace FidoDidoGame.Mapping
             CreateMap<CreatePointDetailRequest, PointDetail>();
             CreateMap<UpdateRank, CreatePointOfDayRequest>();
             CreateMap<UpdateRank, UpdatePointOfDayRequest>();
-            CreateMap<UserRankOfDayIn, RankingResponse>()
-                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => DateTime.Now.AddMilliseconds(miliDateStatic - src.DateMiliSecond).ToLocalTime()));
+            CreateMap<UserRankOfDayIn, RankingResponse>();
+            //.ForMember(dest => dest.Date, opt => opt.MapFrom(src => DateTime.Now.AddMilliseconds(miliDateStatic - src.DateMiliSecond).ToLocalTime()));
+
+            //Event
+            CreateMap<CreateEventRequest, Event>();
+            CreateMap<UpdateEventRequest, Event>();
             
         }
     }

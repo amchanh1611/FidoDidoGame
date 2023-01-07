@@ -24,6 +24,7 @@ public interface IUserService
     string RefreshToken(string refreshToken);
     User Profile(long userId);
     bool FindById(long userId);
+    void GetReward();
 }
 public class UserService : IUserService
 {
@@ -38,7 +39,6 @@ public class UserService : IUserService
         this.mapper = mapper;
         this.redis = redis;
         this.jwt = jwt;
-        this.fidoDidoService = fidoDidoService;
     }
 
     public void Create(CreateUserRequest request)
@@ -111,8 +111,39 @@ public class UserService : IUserService
     }
     public void GetReward()
     {
-        List<UserRankOfDayIn> rank = redis.ZSGet<UserRankOfDayIn>(RankService.KeysRankOfDay);
+        DateTime dateEnd = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+        DateTime dateStart = DateTime.Now.Date.AddDays(-7);
 
-        repository.Reward.Create(new Reward(rank[0].UserId, Award.First,))
+        List<UserRankOfDayIn> rank = redis.ZSGet<UserRankOfDayIn>(RankService.KeysRankOfDay)
+            .Where(x => x.Date >= dateStart && x.Date <= dateEnd)
+            .GroupBy(key => key.UserId)
+            .Select(grp => new UserRankOfDayIn
+            (
+                grp.Select(x => x.DateMiliSecond).LastOrDefault(), 
+                grp.Select(x => x.UserName).FirstOrDefault()!, 
+                grp.Sum(x => x.Point), grp.Key,
+                grp.Select(x => x.Date).LastOrDefault())
+            )
+            .OrderByDescending(x => x.Point).ThenBy(x=>x.Date)
+            .ToList();
+
+        repository.Reward.Create(new Reward(rank[0].UserId, Award.First, dateStart, dateEnd));
+
+        repository.Reward.Create(new Reward(rank[1].UserId, Award.Second, dateStart, dateEnd));
+
+        repository.Reward.Create(new Reward(rank[2].UserId, Award.Third, dateStart, dateEnd));
+
+        for(int i = 3; i < 3000; i++)
+        {
+            // Nếu danh sách người chơi ít hơn 3000 thì cho chạy tới cuối danh sách là dừng
+            if(i == rank.Count - 1)
+                break;
+
+            // Nếu người chơi có điểm bằng 0 (không chơi) thì không phát quà
+            if (rank[i].Point == 0)
+                continue;
+
+            repository.Reward.Create(new Reward(rank[i].UserId, Award.Consolation, dateStart, dateEnd));
+        }
     }
 }

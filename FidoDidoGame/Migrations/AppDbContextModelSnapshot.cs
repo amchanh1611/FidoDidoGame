@@ -82,6 +82,26 @@ namespace FidoDidoGame.Migrations
                     b.ToTable("fido_dido", (string)null);
                 });
 
+            modelBuilder.Entity("FidoDidoGame.Modules.Rank.Entities.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Round")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("event", (string)null);
+                });
+
             modelBuilder.Entity("FidoDidoGame.Modules.Ranks.Entities.PointDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -140,9 +160,8 @@ namespace FidoDidoGame.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Award")
-                        .IsRequired()
-                        .HasColumnType("varchar(12)");
+                    b.Property<sbyte>("Award")
+                        .HasColumnType("tinyint");
 
                     b.Property<DateTime>("DateEnd")
                         .HasColumnType("datetime(6)");

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FidoDidoGame.Migrations
 {
-    public partial class EditStructureDatabase : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -36,24 +36,12 @@ namespace FidoDidoGame.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "text", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Percent = table.Column<int>(type: "int", nullable: false)
+                    Percent = table.Column<int>(type: "int", nullable: false),
+                    PercentRand = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_fido", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "status",
-                columns: table => new
-                {
-                    StatusCode = table.Column<string>(type: "char(9)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_status", x => x.StatusCode);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -64,8 +52,9 @@ namespace FidoDidoGame.Migrations
                     FidoId = table.Column<int>(type: "int", nullable: false),
                     DidoId = table.Column<int>(type: "int", nullable: false),
                     Percent = table.Column<int>(type: "int", nullable: false),
-                    Point = table.Column<string>(type: "char(9)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    PercentRand = table.Column<int>(type: "int", nullable: false),
+                    SpecialStatus = table.Column<sbyte>(type: "tinyint", nullable: false),
+                    Point = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -89,8 +78,7 @@ namespace FidoDidoGame.Migrations
                 name: "user",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<long>(type: "bigint", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NickName = table.Column<string>(type: "text", nullable: false)
@@ -99,10 +87,14 @@ namespace FidoDidoGame.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Address = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    IdCard = table.Column<string>(type: "char(15)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Male = table.Column<sbyte>(type: "tinyint", nullable: true),
                     Avatar = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    FidoId = table.Column<int>(type: "int", nullable: true)
+                    FidoId = table.Column<int>(type: "int", nullable: true),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -121,9 +113,13 @@ namespace FidoDidoGame.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Point = table.Column<int>(type: "int", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    SpecialStatus = table.Column<int>(type: "int", nullable: false),
+                    Point = table.Column<string>(type: "char(9)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    IsX2 = table.Column<string>(type: "char(9)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -143,7 +139,7 @@ namespace FidoDidoGame.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
                     Point = table.Column<int>(type: "int", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -160,24 +156,21 @@ namespace FidoDidoGame.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "user_status",
+                name: "reward",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    StatusCode = table.Column<string>(type: "char(9)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Award = table.Column<sbyte>(type: "tinyint", nullable: false),
+                    DateStart = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DateEnd = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_status", x => new { x.UserId, x.StatusCode });
+                    table.PrimaryKey("PK_reward", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_user_status_status_StatusCode",
-                        column: x => x.StatusCode,
-                        principalTable: "status",
-                        principalColumn: "StatusCode",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_user_status_user_UserId",
+                        name: "FK_reward_user_UserId",
                         column: x => x.UserId,
                         principalTable: "user",
                         principalColumn: "Id",
@@ -201,14 +194,14 @@ namespace FidoDidoGame.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_reward_UserId",
+                table: "reward",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_user_FidoId",
                 table: "user",
                 column: "FidoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_status_StatusCode",
-                table: "user_status",
-                column: "StatusCode");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -223,13 +216,10 @@ namespace FidoDidoGame.Migrations
                 name: "point_of_day");
 
             migrationBuilder.DropTable(
-                name: "user_status");
+                name: "reward");
 
             migrationBuilder.DropTable(
                 name: "dido");
-
-            migrationBuilder.DropTable(
-                name: "status");
 
             migrationBuilder.DropTable(
                 name: "user");
