@@ -25,27 +25,30 @@ namespace FidoDidoGame.Controllers
             return Ok(service.Ranking(request));
         }
 
-        [HttpGet("History"), Authorize]
+        [HttpGet("HistoryOf"), Authorize]
         public IActionResult HistoryOf([FromQuery] HistoryOfRequest request)
         {
-            int userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.HistoryOf(userId, request));
         }
 
         [HttpGet("UserRank"), Authorize]
         public IActionResult UserRank([FromQuery] GetUserRankRequest request)
         {
-            int userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.UserRank(userId,request));
         }
 
-        [HttpPost("CreateEvent")]
+        [HttpPost("Event")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateEvent([FromBody] CreateEventRequest request)
         {
             service.CreateEvent(request);
             return Ok();
         }
-        [HttpPost("UpdateEvent/{eventId}")]
+
+        [HttpPut("Event/{eventId}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateEvent([FromRoute] int eventId, [FromBody] UpdateEventRequest request)
         {
             service.UpdateEvent(eventId, request);

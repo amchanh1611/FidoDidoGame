@@ -14,10 +14,11 @@ namespace FidoDidoGame.Persistents.Repositories
         IFidoRepository Fido { get; }
         IDidoRepository Dido { get; }
         IFidoDidoRepository FidoDido { get; }
-        IPointOfDayRepository PointOfDay { get; }
+        IPointOfRoundRepository PointOfRound { get; }
         IPointDetailRepository PointDetail { get; }
         IRewardRepository Reward { get; }
         IEventRepository Event { get; }
+        IRoleRepository Role { get; }
 
         void Save();
         IDbContextTransaction Transaction();
@@ -30,8 +31,9 @@ namespace FidoDidoGame.Persistents.Repositories
     public interface IFidoRepository : IRepositoryBase<Fido> { }
     public interface IDidoRepository : IRepositoryBase<Dido> { }
     public interface IFidoDidoRepository : IRepositoryBase<FidoDido> { }
-    public interface IPointOfDayRepository : IRepositoryBase<PointOfDay> { }
+    public interface IPointOfRoundRepository : IRepositoryBase<PointOfRound> { }
     public interface IPointDetailRepository : IRepositoryBase<PointDetail> { }
+    public interface IRoleRepository : IRepositoryBase<Role> { }    
 
     public class Repository : IRepository
     {
@@ -46,10 +48,11 @@ namespace FidoDidoGame.Persistents.Repositories
         private IFidoRepository? fido;
         private IDidoRepository? dido;
         private IFidoDidoRepository? fidoDido;
-        private IPointOfDayRepository? pointOfDay;
+        private IPointOfRoundRepository? pointOfRound;
         private IPointDetailRepository? pointDetail;
         private IRewardRepository? reward;
         private IEventRepository events;
+        private IRoleRepository role;
 
         public IEventRepository Event
         {
@@ -111,15 +114,15 @@ namespace FidoDidoGame.Persistents.Repositories
             }
         }
 
-        public IPointOfDayRepository PointOfDay
+        public IPointOfRoundRepository PointOfRound
         {
             get
             {
-                if (pointOfDay is null)
+                if (pointOfRound is null)
                 {
-                    pointOfDay = new PointOfDayRepository(context);
+                    pointOfRound = new PointOfRoundRepository(context);
                 }
-                return pointOfDay;
+                return pointOfRound;
             }
         }
 
@@ -144,6 +147,18 @@ namespace FidoDidoGame.Persistents.Repositories
                     reward = new RewardRepository(context);
                 }
                 return reward;
+            }
+        }
+
+        public IRoleRepository Role
+        {
+            get
+            {
+                if(role is null)
+                {
+                    role = new RoleReposiory(context);
+                }
+                return role;
             }
         }
 
@@ -181,9 +196,9 @@ namespace FidoDidoGame.Persistents.Repositories
         public FidoDidoRepository(AppDbContext context) : base(context)
         { }
     }
-    public class PointOfDayRepository : RepositoryBase<PointOfDay>, IPointOfDayRepository
+    public class PointOfRoundRepository : RepositoryBase<PointOfRound>, IPointOfRoundRepository
     {
-        public PointOfDayRepository(AppDbContext context) : base(context)
+        public PointOfRoundRepository(AppDbContext context) : base(context)
         { }
     }
     public class PointDetailRepository : RepositoryBase<PointDetail>, IPointDetailRepository
@@ -193,5 +208,9 @@ namespace FidoDidoGame.Persistents.Repositories
     public class RewardRepository : RepositoryBase<Reward>, IRewardRepository
     {
         public RewardRepository(AppDbContext context) : base(context) { }
+    }
+    public class RoleReposiory : RepositoryBase<Role>, IRoleRepository
+    {
+        public RoleReposiory(AppDbContext context) : base(context) { }
     }
 }

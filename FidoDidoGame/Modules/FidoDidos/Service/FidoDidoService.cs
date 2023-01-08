@@ -4,7 +4,9 @@ using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Entities;
 using FidoDidoGame.Modules.FidoDidos.Request;
 using FidoDidoGame.Modules.FidoDidos.Response;
+using FidoDidoGame.Modules.Rank.Entities;
 using FidoDidoGame.Modules.Rank.Request;
+using FidoDidoGame.Modules.Ranks.Entities;
 using FidoDidoGame.Modules.Ranks.Services;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Services;
@@ -170,8 +172,13 @@ public class FidoDidoService : IFidoDidoService
                 if (userStatus.Where(x => x == SpecialStatus.X2).Any())
                     point *= 2;
 
+                // Gets event để lấy eventId
+
+                Event entityEvent = repository.Event
+                .FindByCondition(x => x.DateStart <= date && x.DateEnd >= date).FirstOrDefault()!;
+
                 //Update rank of user
-                rankService.UpdateRank(new UpdateRank(user.Name, userId, fidoDido.Point, date));
+                rankService.UpdateRank(new UpdateRank(user.Name, userId, fidoDido.Point, date, entityEvent.Id));
             }
             else
             {

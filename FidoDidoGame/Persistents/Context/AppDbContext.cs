@@ -28,6 +28,10 @@ public class AppDbContext : DbContext
             builder.HasOne(x => x.Fido)
             .WithMany(x => x.Users)
             .HasForeignKey(x => x.FidoId);
+            builder.HasOne(x => x.Role)
+            .WithMany(x => x.Users)
+            .HasForeignKey(x => x.RoleId);
+            
         });
         modelBuilder.Entity<Fido>(builder =>
         {
@@ -47,9 +51,9 @@ public class AppDbContext : DbContext
             builder.HasKey(x => new { x.FidoId, x.DidoId });
             builder.Property(x => x.SpecialStatus).HasColumnType("tinyint");
         });
-        modelBuilder.Entity<PointOfDay>(builder =>
+        modelBuilder.Entity<PointOfRound>(builder =>
         {
-            builder.ToTable(nameof(PointOfDay).Underscore());
+            builder.ToTable(nameof(PointOfRound).Underscore());
             builder.HasKey(x => x.Id);
             builder.HasOne(x => x.User)
             .WithMany(x => x.PointOfDays)
@@ -78,6 +82,12 @@ public class AppDbContext : DbContext
         {
             builder.ToTable(nameof(Event).Underscore());
             builder.HasKey(x => x.Id);
+        });
+        modelBuilder.Entity<Role>(builder =>
+        {
+            builder.ToTable(nameof(Role).Underscore());
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Name).HasColumnType("varchar(10)");
         });
     }
 }

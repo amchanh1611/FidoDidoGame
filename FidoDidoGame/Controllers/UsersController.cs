@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using System.Security.Claims;
 using Hangfire;
+using FidoDidoGame.Modules.Ranks.Services;
+using FidoDidoGame.Modules.Rank.Entities;
 
 namespace FidoDidoGame.Controllers
 {
@@ -18,21 +20,27 @@ namespace FidoDidoGame.Controllers
     {
         private readonly IUserService service;
         private readonly IBackgroundJobClient hangfire;
+        private readonly IRankService rankService;
 
-        public UsersController(IUserService service, IBackgroundJobClient hangfire)
+        public UsersController(IUserService service, IBackgroundJobClient hangfire, IRankService rankService)
         {
             this.service = service;
             this.hangfire = hangfire;
+            this.rankService = rankService;
         }
+
         [HttpPost]
+        [Authorize(Roles = "Develop")]
         public IActionResult Create([FromBody] CreateUserRequest request)
         {
             service.Create(request);
             return Ok();
         }
-        [HttpPut("{userId}")]
-        public IActionResult Update([FromRoute] int userId, [FromBody] UpdateUserRequest request)
+
+        [HttpPut("{userId}"), Authorize]
+        public IActionResult Update([FromBody] UpdateUserRequest request)
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             service.Update(userId, request);
             return Ok();
         }
@@ -49,6 +57,7 @@ namespace FidoDidoGame.Controllers
             AuthenticationProperties properties = new () { RedirectUri = Url.Action("FaceBookRedirect") };
             return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
+
         [HttpGet("FacebookOauthRedirect")]
         public async Task<IActionResult> FaceBookRedirectAsync()
         {
@@ -75,7 +84,8 @@ namespace FidoDidoGame.Controllers
                     Id = userId,
                     Name = authResult.Principal!.FindFirst(ClaimTypes.Name)!.Value,
                     NickName = authResult.Principal!.FindFirst(ClaimTypes.Name)!.Value,
-                    Avatar = picture.Data!.Url
+                    Avatar = picture.Data!.Url,
+                    RoleId = 3
                 };
 
                 service.Create(request);
@@ -84,17 +94,39 @@ namespace FidoDidoGame.Controllers
 
             return Ok(service.JwtGenerateToken(userId));
         }
+
         [HttpPost("RefreshToken")]
         public IActionResult RefreshToken([FromBody] string refreshToken)
         {
             return Ok(service.RefreshToken(refreshToken));
         }
+
         [HttpGet("Reward")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetReward()
         {
-            
-            service.GetReward();
+            List<Event> events = rankService.GetEvent();
+
+            foreach(Event item in events) 
+            {
+                hangfire.Schedule(() => service.GetReward(item.Id), item.DateEnd);
+            }
+
             return Ok();
+        }
+
+        [HttpPost("Role")]
+        [Authorize(Roles = "Develop")]
+        public IActionResult CreateRole(CreateRoleRequest request)
+        {
+            service.CreateRole(request);
+            return Ok();
+        }
+
+        [HttpPost("Login")]
+        public IActionResult Login(LoginRequest request)
+        {
+            return Ok(service.Login(request));
         }
     }
 }

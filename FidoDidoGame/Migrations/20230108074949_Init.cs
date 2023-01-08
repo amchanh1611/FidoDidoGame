@@ -29,6 +29,22 @@ namespace FidoDidoGame.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "event",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Round = table.Column<int>(type: "int", nullable: false),
+                    DateStart = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DateEnd = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_event", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "fido",
                 columns: table => new
                 {
@@ -134,20 +150,27 @@ namespace FidoDidoGame.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "point_of_day",
+                name: "point_of_round",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     Point = table.Column<int>(type: "int", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    Date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EventId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_point_of_day", x => x.Id);
+                    table.PrimaryKey("PK_point_of_round", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_point_of_day_user_UserId",
+                        name: "FK_point_of_round_event_EventId",
+                        column: x => x.EventId,
+                        principalTable: "event",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_point_of_round_user_UserId",
                         column: x => x.UserId,
                         principalTable: "user",
                         principalColumn: "Id",
@@ -189,8 +212,13 @@ namespace FidoDidoGame.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_point_of_day_UserId",
-                table: "point_of_day",
+                name: "IX_point_of_round_EventId",
+                table: "point_of_round",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_point_of_round_UserId",
+                table: "point_of_round",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -213,13 +241,16 @@ namespace FidoDidoGame.Migrations
                 name: "point_detail");
 
             migrationBuilder.DropTable(
-                name: "point_of_day");
+                name: "point_of_round");
 
             migrationBuilder.DropTable(
                 name: "reward");
 
             migrationBuilder.DropTable(
                 name: "dido");
+
+            migrationBuilder.DropTable(
+                name: "event");
 
             migrationBuilder.DropTable(
                 name: "user");

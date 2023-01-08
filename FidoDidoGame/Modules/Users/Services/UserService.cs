@@ -2,7 +2,8 @@
 using FidoDidoGame.Common.Jwt;
 using FidoDidoGame.Middleware;
 using FidoDidoGame.Modules.FidoDidos.Entities;
-using FidoDidoGame.Modules.FidoDidos.Service;
+using FidoDidoGame.Modules.Rank.Entities;
+using FidoDidoGame.Modules.Rank.Request;
 using FidoDidoGame.Modules.Ranks.Services;
 using FidoDidoGame.Modules.Users.Entities;
 using FidoDidoGame.Modules.Users.Request;
@@ -10,8 +11,8 @@ using FidoDidoGame.Modules.Users.Response;
 using FidoDidoGame.Persistents.Redis.Entities;
 using FidoDidoGame.Persistents.Redis.Services;
 using FidoDidoGame.Persistents.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Text.Json;
 
 namespace FidoDidoGame.Modules.Users.Services;
 
@@ -24,7 +25,9 @@ public interface IUserService
     string RefreshToken(string refreshToken);
     User Profile(long userId);
     bool FindById(long userId);
-    void GetReward();
+    void GetReward(int eventId);
+    void CreateRole(CreateRoleRequest request);
+    public JwtTokenResponse Login(LoginRequest request);
 }
 public class UserService : IUserService
 {
@@ -32,13 +35,15 @@ public class UserService : IUserService
     private readonly IRepository repository;
     private readonly IMapper mapper;
     private readonly IJwtServices jwt;
-    
-    public UserService(IRepository repository, IMapper mapper, IRedisService redis, IJwtServices jwt)
+    private readonly IRankService rankService;
+
+    public UserService(IRepository repository, IMapper mapper, IRedisService redis, IJwtServices jwt, IRankService rankService)
     {
         this.repository = repository;
         this.mapper = mapper;
         this.redis = redis;
         this.jwt = jwt;
+        this.rankService = rankService;
     }
 
     public void Create(CreateUserRequest request)
@@ -52,9 +57,15 @@ public class UserService : IUserService
             // Set default UserStatus is normal 
             redis.Set($"User:{user.Id}:Status:{SpecialStatus.Normal}", SpecialStatus.Normal);
 
+            DateTime date = DateTime.Now;
+
+            Event round = repository.Event.FindByCondition(x => x.DateStart <= date && x.DateEnd >= date).FirstOrDefault()!;
+
+            rankService.CreatePointOfRound(new CreatePointOfRoundRequest(user.Id, user.Name, 0, date, round.Id));
+
             transaction.Commit();
         }
-        catch(Exception)
+        catch (Exception)
         {
             transaction.Rollback();
             throw new BadRequestException("Create Fail");
@@ -73,9 +84,9 @@ public class UserService : IUserService
 
     public JwtTokenResponse JwtGenerateToken(long userId)
     {
-        User user = repository.User.FindByCondition(x => x.Id == userId).FirstOrDefault()!;
+        User user = repository.User.FindByCondition(x => x.Id == userId).Include(x=>x.Role).FirstOrDefault()!;
 
-        if(user.RefreshToken is null)
+        if (user.RefreshToken is null)
         {
             user.RefreshToken = jwt.GenerateRefreshToken();
             user = repository.User.Update(user);
@@ -109,41 +120,50 @@ public class UserService : IUserService
         repository.User.Update(mapper.Map(request, user!));
         repository.Save();
     }
-    public void GetReward()
+    public void GetReward(int eventId)
     {
-        DateTime dateEnd = DateTime.Now.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
-        DateTime dateStart = DateTime.Now.Date.AddDays(-7);
+        Event round = repository.Event.FindByCondition(x => x.Id == eventId).FirstOrDefault()!;
 
-        List<UserRankOfDayIn> rank = redis.ZSGet<UserRankOfDayIn>(RankService.KeysRankOfDay)
-            .Where(x => x.Date >= dateStart && x.Date <= dateEnd)
-            .GroupBy(key => key.UserId)
-            .Select(grp => new UserRankOfDayIn
-            (
-                grp.Select(x => x.DateMiliSecond).LastOrDefault(), 
-                grp.Select(x => x.UserName).FirstOrDefault()!, 
-                grp.Sum(x => x.Point), grp.Key,
-                grp.Select(x => x.Date).LastOrDefault())
-            )
-            .OrderByDescending(x => x.Point).ThenBy(x=>x.Date)
-            .ToList();
+        List<UserRankOfRoundIn> rank = redis.ZSGet<UserRankOfRoundIn>($"{RankService.KeysRankOfDay}:Round:{eventId}");
 
-        repository.Reward.Create(new Reward(rank[0].UserId, Award.First, dateStart, dateEnd));
-
-        repository.Reward.Create(new Reward(rank[1].UserId, Award.Second, dateStart, dateEnd));
-
-        repository.Reward.Create(new Reward(rank[2].UserId, Award.Third, dateStart, dateEnd));
-
-        for(int i = 3; i < 3000; i++)
+        for (int i = 0; i < 3000; i++)
         {
             // Nếu danh sách người chơi ít hơn 3000 thì cho chạy tới cuối danh sách là dừng
-            if(i == rank.Count - 1)
+            if (i >= rank.Count)
                 break;
 
             // Nếu người chơi có điểm bằng 0 (không chơi) thì không phát quà
             if (rank[i].Point == 0)
                 continue;
 
-            repository.Reward.Create(new Reward(rank[i].UserId, Award.Consolation, dateStart, dateEnd));
+            Award award = Award.Consolation;
+
+            switch (i)
+            {
+                case 0: award = Award.First; break;
+                case 1: award = Award.Second; break;
+                case 2: award = Award.Third; break;
+                default: break;
+            }
+
+            CreateReward(new CreateRewardRequest(rank[i].UserId, award, round.DateStart, round.DateEnd));
         }
+    }
+    private void CreateReward(CreateRewardRequest request)
+    {
+        repository.Reward.Create(mapper.Map<CreateRewardRequest, Reward>(request));
+        repository.Save();
+    }
+    public void CreateRole(CreateRoleRequest request)
+    {
+        repository.Role.Create(mapper.Map<CreateRoleRequest, Role>(request));
+        repository.Save();
+    }
+
+    public JwtTokenResponse Login(LoginRequest request)
+    {
+        User user = repository.User.FindByCondition(x=>x.Name == request.UserName && x.Password == request.Password).Include(x=>x.Role).FirstOrDefault()!;
+
+        return JwtGenerateToken(user.Id);
     }
 }

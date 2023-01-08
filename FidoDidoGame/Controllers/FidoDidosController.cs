@@ -16,19 +16,25 @@ namespace FidoDidoGame.Controllers
         {
             this.service = service;
         }
+
         [HttpPost("Fido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateFido([FromBody] CreateFidoRequest request)
         {
             service.CreateFido(request);
             return Ok();
         }
+
         [HttpPost("Dido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateDido([FromBody] List<string> didoNames)
         {
             service.CreateMultiDido(didoNames);
             return Ok();
         }
+
         [HttpPost("FidoDido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateFidoDido([FromBody] CreateFidoDidoRequest request)
         {
             service.CreateFidoDido(request);
@@ -49,6 +55,7 @@ namespace FidoDidoGame.Controllers
         }
 
         [HttpPut("Fido/{fidoId}/Percent")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateFidoPercent([FromRoute] int fidoId, UpdateFidoPercentRequest request)
         {
             service.UpdateFidoPercent(fidoId, request);

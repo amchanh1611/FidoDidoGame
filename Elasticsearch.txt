@@ -1,0 +1,65 @@
+https://cloudgeeks.net/tim-hieu-ve-elastic-search-ung-dung-cua-elastic-search/
+
+https://anonystick.com/blog-developer/elasticsearch-la-gi-mo-hinh-dac-diem-va-cai-dat-elasticsearch-2020060249015172
+
+https://vietnix.vn/elasticsearch-la-gi/
+
+https://viblo.asia/p/elasticsearch-la-gi-1Je5E8RmlnL
+
+
+
+Index là - một cấu trúc dữ liệu gồm 2 phần
+           + SearchKey : chứa bản sao của các giá trị nằm trong cột được tạo index (sao chép lại các giá trị của cột được tạo index)
+           + Data reference : con trỏ, trỏ đến địa chỉ( vị trí) của bản ghi trong table, chứa giá trị tương ứng (chứa giá trị tương ứng với SearchKey)  
+         - dùng để làm gì: dùng để định vị và truy cập nhanh nhất vào dử liệu của database, Index dùng để tối ưu hiệu suất truy vấn Database
+ - Index thường được tạo mặc định cho Primary key và foreign key, cũng có thể tạo thêm Index cho các cột nếu cần
+
+ -  
+
+ELASTICSEARCH   - là 1 search engine, core của nó là apache lucene, tốc độ nhanh (near realtime)
+ 		- Có khả năng phân tích và thông kê dữ liệu	
+ 		- chạy trên server riêng, giao tiếp bằng Restful, chỉ cần gửi request lên là nó sẽ trả về kết quả
+
+Các khải niệm cần biết:
+ - Document là một Json Object, là đơn vị nhỏ nhất để lưu trữ dữ liệu trong ES
+ - Index khác với Index trong Mysql, nó là inverted index, được thiết kế để thực hiện tìm kiếm
+     full-text search(tức là tìm kiếm full-text trên full-text database tức là tìm kím trên toàn bộ text của database chứ không như cách tìm tìm kiếm 
+       cơ bản trong database là sử dụng : Select column1, column2 
+					 from table 
+					 where column1 Like %text% => sẽ bị giới hạn trong 1 số column nhất định chứ không phải toàn bộ database)
+    + ưu điểm của full-text search là kết quả tìm rộng hơn, nhanh hơn vì có inverted index(tìm kiếm theo Like thông thường không được đánh Index)
+        , kết quả ít bị nhiễu hơn
+
+ // Inverted index khác với index thông thường là thay vì index theo row thì nó sẽ index theo term(chia văn bản thành các từ có nghĩa, 1 từ có nghĩa được gọi là 1 term)
+ // VD: A1 = "this is A1"
+        A2 = "this is A2 test"
+        Index thường                    Inverted Index
+      "this is A1" : {A1}               "this" : {A1, A2}
+     (searchKey)   :(Data reference)    "is"   :  {A1, A2}
+      "this is A2 test" : {A2}          "A1"   : {A1}, "A2" : {A2}  
+				       (term)	 (index)	
+ 
+ // khi inverted index tìm kiếm: VD khi tìm this is A1
+       "This" {A1, A2} + "is" {A1, A2} + "A1" {A1} => kết quả sẽ là giao của tập hợp {A1, A2} + {A1, A2} + {A1} = {A1}
+    + Khi lưu dữ liệu vào ES, nó sẽ tự động đánh Index cho dữ liệu
+
+ - Shard  là tập con các documents của 1 Index,  một Index có thể được chia thành nhiều shard
+	Có 2 loại Shard là : primary shard và replica shard => chúng ta thường không làm việc với shard
+ - Node + Là trung tâm hoạt động của ES, là nơi lưu trữ dữ liệu ,tham gia thực hiện đánh index của cluster cũng như thực hiện các thao tác tìm kiếm
+        + Mỗi node được định danh bằng 1 unique name
+=> dữ liệu được lưu trữ và tìm kím ở node
+ - Cluster + tập hợp các nodes hoạt động cùng với nhau,chia sẽ cùng thuộc tính "cluster.name" Chính vì thế Cluster sẽ được xác định bằng 1 'unique name'
+           + Mỗi cluster có một node chính (master), được lựa chọn một cách tự động và có thể thay thế nếu sự cố xảy ra
+           + Chức năng chính của Cluster đó chính là quyết định xem shards nào được phân bổ cho node nào và khi nào thì di chuyển các Cluster để cân bằng lại Cluster
+
+Ưu điểm của ES:
+ - Tìm kiếm dữ liệu rất nhanh chóng, mạnh mẽ dựa trên Apache Lucene ( near-realtime searching)
+ - Có khả năng phân tích dữ liệu
+ - Khả năng mở rộng theo chiều ngang
+ - Hỗ trợ tìm kiếm mờ (fuzzy), tức là từ khóa tìm kiếm có thể bị sai lỗi chính tả hay không đúng cú pháp thì vẫn có khả năng elasticsearch trả về kết quả tốt
+Nhược điểm: 
+ - được thiết kế ra chỉ mạnh về search nên CRUD kém, thường không dùng làm database chính mà phải phối hợp với database khác như mongoDB, MySql
+ - không có Transaction nên việc toàn vẹn dữ liệu kém
+
+Nhìn chung : 1. Mình lưu những dữ liệu cần thiết, rồi tìm kiếm dữ liệu cần tìm từ đống dữ liệu cần thiết 
+ 2. Elasticsearch được xây dựng cho việc tìm kiếm, phân tích và thống kê dữ liệu doang nghiệp

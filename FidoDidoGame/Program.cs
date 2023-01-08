@@ -151,6 +151,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseHangfireDashboard();
+
+//Static Files
 app.UseStaticFiles();
 
 //ErorHandlerMiddleware
