@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 05, 2023 at 03:12 PM
+-- Generation Time: Jan 08, 2023 at 09:59 AM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -36,6 +36,14 @@ INSERT INTO `dido` (`Id`, `Name`) VALUES
 (8, 'RGB');
 
 --
+-- Dumping data for table `event`
+--
+
+INSERT INTO `event` (`Id`, `Round`, `DateStart`, `DateEnd`) VALUES
+(1, 1, '2023-01-07 00:00:00.000000', '2023-01-08 23:59:59.000000'),
+(2, 2, '2023-01-09 00:00:00.000000', '2023-01-15 23:59:59.000000');
+
+--
 -- Dumping data for table `fido`
 --
 
@@ -48,108 +56,80 @@ INSERT INTO `fido` (`Id`, `Name`, `Percent`, `PercentRand`) VALUES
 -- Dumping data for table `fido_dido`
 --
 
-INSERT INTO `fido_dido` (`FidoId`, `DidoId`, `Percent`, `Point`, `PercentRand`, `SpecialStatus`) VALUES
-(1, 1, 20, 777, 20, 6),
-(1, 2, 25, 390, 45, 6),
-(1, 3, 10, 200, 75, 6),
-(1, 4, 5, 0, 80, 2),
-(1, 5, 5, 0, 85, 3),
-(1, 6, 5, 0, 90, 4),
-(1, 7, 10, 0, 100, 5),
-(2, 2, 35, 390, 35, 6),
-(2, 3, 45, 200, 80, 6),
-(2, 4, 5, 0, 85, 2),
-(2, 5, 5, 0, 90, 3),
-(2, 7, 10, 0, 100, 5),
-(3, 3, 65, 200, 65, 6),
-(3, 4, 10, 0, 75, 2),
-(3, 8, 25, 390, 100, 6);
+INSERT INTO `fido_dido` (`FidoId`, `DidoId`, `Percent`, `PercentRand`, `SpecialStatus`, `Point`) VALUES
+(1, 1, 20, 20, 6, 777),
+(1, 2, 25, 45, 6, 390),
+(1, 3, 10, 75, 6, 200),
+(1, 4, 5, 80, 2, 0),
+(1, 5, 5, 85, 3, 0),
+(1, 6, 5, 90, 4, 0),
+(1, 7, 10, 100, 5, 0),
+(2, 2, 35, 35, 6, 390),
+(2, 3, 45, 80, 6, 200),
+(2, 4, 5, 85, 2, 0),
+(2, 5, 5, 90, 3, 0),
+(2, 7, 10, 100, 5, 0),
+(3, 3, 65, 65, 6, 200),
+(3, 4, 10, 75, 2, 0),
+(3, 8, 25, 100, 6, 390);
 
 --
 -- Dumping data for table `point_detail`
 --
 
-INSERT INTO `point_detail` (`Id`, `UserId`, `Point`, `Date`, `IsX2`, `SpecialStatus`) VALUES
-(1, 1, '390', '2022-12-29 13:05:24.064871', '390', 6),
-(2, 2, '390', '2022-12-29 13:05:51.851950', '390', 6),
-(3, 3, '390', '2022-12-29 13:08:09.217308', '390', 6),
-(4, 1, '200', '2022-12-29 14:43:21.822202', '200', 6),
-(5, 1, '777', '2022-12-29 16:15:35.057884', '777', 6),
-(6, 1, '390', '2022-12-29 16:22:35.705008', '390', 6),
-(7, 1, '200', '2022-12-29 16:22:41.059604', '200', 6),
-(8, 2, '200', '2022-12-29 16:33:17.131096', '200', 6),
-(9, 2, '200', '2022-12-29 16:33:28.055222', '200', 6),
-(10, 2, '200', '2022-12-29 16:33:39.357461', '200', 6),
-(11, 2, '200', '2022-12-29 16:33:43.775303', '200', 6),
-(12, 2, '200', '2022-12-29 16:33:53.242811', '200', 6),
-(13, 2, '200', '2022-12-29 16:33:57.147564', '200', 6),
-(14, 3, '200', '2022-12-29 16:45:13.252422', '200', 6),
-(15, 3, '200', '2022-12-29 16:47:18.652846', '200', 6),
-(16, 3, '200', '2022-12-29 16:47:27.430962', '200', 6),
-(17, 3, '777', '2022-12-29 16:47:51.973251', '777', 6),
-(18, 3, '200', '2022-12-29 16:47:59.429797', '200', 6),
-(19, 3, '200', '2022-12-29 16:48:04.537620', '200', 6),
-(20, 3, '200', '2022-12-29 16:48:09.400312', '200', 6),
-(21, 3, '777', '2022-12-29 16:48:14.567383', '777', 6),
-(22, 3, '390', '2022-12-29 16:48:21.796851', '390', 6),
-(23, 3, '390', '2022-12-29 16:48:27.943514', '390', 6),
-(24, 3, '200', '2022-12-29 16:48:38.653564', '200', 6),
-(25, 3, '777', '2022-12-29 16:48:45.539450', '777', 6),
-(26, 3, '200', '2022-12-29 16:48:50.263206', '200', 6),
-(27, 3, '390', '2022-12-29 16:48:55.216857', '390', 6),
-(28, 3, '200', '2022-12-29 16:48:59.640188', '200', 6),
-(29, 3, '390', '2022-12-29 16:49:04.155383', '390', 6),
-(30, 2, '390', '2022-12-29 16:49:17.664066', '390', 6),
-(31, 2, '200', '2022-12-29 16:49:24.922596', '200', 6),
-(32, 2, '200', '2022-12-29 16:49:30.348809', '200', 6),
-(33, 2, '390', '2022-12-29 16:49:36.525465', '390', 6),
-(34, 2, '0', '2022-12-29 16:49:39.886713', '0', 2),
-(35, 2, '200', '2022-12-29 16:50:03.153370', '400', 6);
+INSERT INTO `point_detail` (`Id`, `UserId`, `SpecialStatus`, `Point`, `Date`, `IsX2`) VALUES
+(10, 177966851518295, 6, '390', '2023-01-07 20:57:25.133768', '390'),
+(11, 177966851518295, 6, '200', '2023-01-07 20:57:38.354099', '200'),
+(12, 177966851518295, 6, '200', '2023-01-10 20:59:19.999037', '200'),
+(13, 177966851518295, 6, '390', '2023-01-10 20:59:25.661595', '390');
 
 --
--- Dumping data for table `point_of_day`
+-- Dumping data for table `point_of_round`
 --
 
-INSERT INTO `point_of_day` (`Id`, `UserId`, `Point`, `Date`) VALUES
-(1, 1, 1957, '2022-12-29 16:22:41.059604'),
-(2, 2, 2970, '2022-12-29 16:50:03.153370'),
-(3, 3, 6081, '2022-12-29 16:49:04.155383');
+INSERT INTO `point_of_round` (`Id`, `UserId`, `Point`, `Date`, `EventId`) VALUES
+(1, 177966851518295, 590, '2023-01-07 20:57:38.354099', 1),
+(2, 177966851518295, 590, '2023-01-10 20:59:25.661595', 2),
+(3, 1, 0, '2023-01-08 15:06:08.829883', 1),
+(4, 2, 0, '2023-01-08 15:06:50.843699', 1),
+(5, 118008904500007, 0, '2023-01-08 15:58:03.691450', 1);
+
+--
+-- Dumping data for table `role`
+--
+
+INSERT INTO `role` (`Id`, `Name`) VALUES
+(1, 'Admin'),
+(2, 'Develop'),
+(3, 'User'),
+(4, 'Test');
 
 --
 -- Dumping data for table `server`
 --
 
 INSERT INTO `server` (`Id`, `Data`, `LastHeartbeat`) VALUES
-('55c1de92-f2c6-417a-82ac-8cdc26824cf9', '{\"WorkerCount\":5,\"Queues\":[\"default\",\"default\",\"notdefault\"],\"StartedAt\":\"2023-01-04T13:49:44.5603464Z\"}', '2023-01-04 13:50:45.185739');
+('97e0122d-a0cf-4f9e-9f22-b29c7586dc89', '{\"WorkerCount\":5,\"Queues\":[\"default\",\"default\",\"notdefault\"],\"StartedAt\":\"2023-01-08T08:53:17.6553508Z\"}', '2023-01-08 08:58:18.229023');
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `Male`, `Avatar`, `FidoId`, `IdCard`, `RefreshToken`) VALUES
-(1, 'Âu Minh Chánh', 'MinhChanh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'Âu Minh', 'Minh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 'Âu Chanh', 'ChanhChanh', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(177966851518295, 'Minh Chánh', 'Minh Chánh', NULL, NULL, NULL, 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=177966851518295&height=720&ext=1675432202&hash=AeQ7m7Ow3Ms3gzxO7Us', NULL, NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzI4NDAyMjIsImV4cCI6MTY3MzQ0NTAyMiwiaWF0IjoxNjcyODQwMjIyLCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.2pmxXU6K_q20ALb7ivVSCB63Pag9GwZGE-PeNVloSGI');
+INSERT INTO `user` (`Id`, `Name`, `NickName`, `Phone`, `Address`, `IdCard`, `Male`, `Avatar`, `FidoId`, `RefreshToken`, `RoleId`, `Password`) VALUES
+(1, 'Admin', 'Admin', NULL, NULL, NULL, NULL, 'string', NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzMxNjYyNzksImV4cCI6MTY3Mzc3MTA3OSwiaWF0IjoxNjczMTY2Mjc5LCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.eQ_co7wMKcVrGFsdz5WR6pEEUuaMTP7oAcOIGQnLP98', 1, 'admin'),
+(2, 'Develop', 'Develop', NULL, NULL, NULL, NULL, 'string', NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzMxNjYyMDIsImV4cCI6MTY3Mzc3MTAwMiwiaWF0IjoxNjczMTY2MjAyLCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.bfxWBMjLnzbaOecDu7ocCCX7KfU_wB7gCgqWtSn9RRs', 2, 'develop'),
+(106155052368448, 'Carol Alhibahfjbage Bharambestein', 'Carol Alhibahfjbage Bharambestein', NULL, NULL, NULL, NULL, 'https://scontent.fsgn2-5.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=dst-jpg_p720x720&_nc_cat=1&ccb=1-7&_nc_sid=12b3be&_nc_ohc=oSvaGOjAge0AX-3O2Ya&_nc_ht=scontent.fsgn2-5.fna&edm=AHgPADgEAAAA&oh=00_AfAE5gkA2bejcOFOS42NX_Nw7XL2luND4A9vgBjH4JK7mw&oe=63DF3BD9', NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzMwNzIyMTQsImV4cCI6MTY3MzY3NzAxNCwiaWF0IjoxNjczMDcyMjE0LCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.E-s1xjqztPEOAgZjJnTk1iS5FWKxZMcl0F405ovSw6I', 3, NULL),
+(118008904500007, 'Open Graph Test User', 'Open Graph Test User', NULL, NULL, NULL, NULL, 'https://z-p3-scontent.fsgn5-9.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=dst-jpg_p720x720&_nc_cat=1&ccb=1-7&_nc_sid=12b3be&_nc_ohc=qIPCd3XtmYYAX_oZBVj&_nc_ht=z-p3-scontent.fsgn5-9.fna&edm=AHgPADgEAAAA&oh=00_AfBX_R4t70YU0NjIELugDsJhmJe1mWPqI4bXDvqSsxNNJQ&oe=63E1DED9', NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzMxNjgyODMsImV4cCI6MTY3Mzc3MzA4MywiaWF0IjoxNjczMTY4MjgzLCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.5onwjTbNwrUq_Vkcaf5XqL4mzfiwrxXuTEoVC6yrm8w', 3, NULL),
+(177966851518295, 'Minh Chánh', 'Minh Chánh', NULL, NULL, NULL, NULL, 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=177966851518295&height=720&ext=1675566887&hash=AeRz3SgRxhlkR5Qy_U8', NULL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE2NzI5NzQ4OTIsImV4cCI6MTY3MzU3OTY5MiwiaWF0IjoxNjcyOTc0ODkyLCJpc3MiOiJodHRwczovL0ZpZG9kaWRvZ2FtZS5jb20ifQ.1W8hFW6hha3lxO3KN2nT0GkFWn7ooPjnUZZw59RHsuk', 3, NULL);
 
 --
 -- Dumping data for table `__efmigrationshistory`
 --
 
 INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
-('20221223023545_EditStructureDatabase', '6.0.11'),
-('20221223051005_AddPercentRandToModel', '6.0.11'),
-('20221224051950_MergeUserStatusToUser', '6.0.11'),
-('20221224052111_MergeUserStatusToUserAndEditColumnType', '6.0.11'),
-('20221226033442_ChangeTypePointDetailToString', '6.0.11'),
-('20221227053040_AddCollumnIsX2InPointDetail', '6.0.11'),
-('20221229050348_EditModelFidoDido', '6.0.11'),
-('20230104040557_DisableAutoIncrementUserId', '6.0.11'),
-('20230104050232_ChangeTypeUserId', '6.0.11'),
-('20230104134634_AddColumnRefreshTokenInUser', '6.0.11'),
-('20230104134803_ChangeTypeColumnRefreshTokenInUser', '6.0.11'),
-('20230104134827_ChangeTypeColumnRefreshTokenInUser1', '6.0.11'),
-('20230105135151_AddModelReward', '6.0.11');
+('20230108074949_Init', '6.0.11'),
+('20230108075700_AddModelsRole', '6.0.11'),
+('20230108081314_AddColumnPassword', '6.0.11');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

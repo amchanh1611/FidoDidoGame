@@ -5,14 +5,14 @@ namespace FidoDidoGame.Modules.FidoDidos.Response
 {
     public class FidoResponse
     {
-        public FidoResponse(int? userId, string fido, List<SpecialStatus>? status)
+        public FidoResponse(long? userId, string fido, List<SpecialStatus>? status)
         {
             UserId = userId;
             Status = status;
             Fido = fido;
         }
 
-        public int? UserId { get; set; }
+        public long? UserId { get; set; }
         public string? Fido { get; set; }
         public List<SpecialStatus>? Status { get; set; }
     }

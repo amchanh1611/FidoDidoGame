@@ -4,24 +4,23 @@
 
 namespace FidoDidoGame.Migrations
 {
-    public partial class AddCollumnIsX2InPointDetail : Migration
+    public partial class AddColumnPassword : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "IsX2",
-                table: "point_detail",
-                type: "char(9)",
-                nullable: false,
-                defaultValue: "")
+                name: "Password",
+                table: "user",
+                type: "longtext",
+                nullable: true)
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsX2",
-                table: "point_detail");
+                name: "Password",
+                table: "user");
         }
     }
 }

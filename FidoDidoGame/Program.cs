@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using System.Text;
 
@@ -30,7 +31,38 @@ ConfigurationManager configure = builder.Configuration;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "API",
+        Description = "QPIN API with ASP.NET 6",
+        Contact = new OpenApiContact()
+        {
+            Name = "Au Minh Chanh",
+            Email = "am.chanh16111@gmail.com"
+        }
+    });
+    OpenApiSecurityScheme securitySchema = new() 
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+    c.AddSecurityDefinition("Bearer", securitySchema);
+
+    OpenApiSecurityRequirement securityRequirement = new();
+    securityRequirement.Add(securitySchema, new[] { "Bearer" });
+    c.AddSecurityRequirement(securityRequirement);
+});
 
 //Redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(options => ConnectionMultiplexer.Connect(configure["Appsettings:Database:RedisConnection"]));
@@ -119,6 +151,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseHangfireDashboard();
+
+//Static Files
 app.UseStaticFiles();
 
 //ErorHandlerMiddleware

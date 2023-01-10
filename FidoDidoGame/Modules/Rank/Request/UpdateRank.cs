@@ -4,18 +4,21 @@
     {
         public string? UserName { get; set; }
 
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         public int Point { get; set; }
 
         public DateTime Date { get; set; }
 
-        public UpdateRank(string? userName, int userId, int point, DateTime date)
+        public int EventId { get; set; }
+
+        public UpdateRank(string? userName, long userId, int point, DateTime date, int eventId)
         {
             UserName = userName;
             UserId = userId;
             Point = point;
             Date = date;
+            EventId = eventId;
         }
 
     }

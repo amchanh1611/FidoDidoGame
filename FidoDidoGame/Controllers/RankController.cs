@@ -1,7 +1,10 @@
-﻿using FidoDidoGame.Modules.Ranks.Request;
+﻿using FidoDidoGame.Modules.Rank.Request;
+using FidoDidoGame.Modules.Ranks.Request;
 using FidoDidoGame.Modules.Ranks.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FidoDidoGame.Controllers
 {
@@ -15,20 +18,41 @@ namespace FidoDidoGame.Controllers
         {
             this.service = service;
         }
-        [HttpGet("Rank")]
+
+        [HttpGet("Rank"), Authorize]
         public IActionResult Ranking([FromQuery] GetRankRequest request)
         {
             return Ok(service.Ranking(request));
         }
-        [HttpGet("History/User/{userId}")]
-        public IActionResult HistoryOf([FromRoute] int userId, [FromQuery] HistoryOfRequest request)
+
+        [HttpGet("HistoryOf"), Authorize]
+        public IActionResult HistoryOf([FromQuery] HistoryOfRequest request)
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.HistoryOf(userId, request));
         }
-        [HttpGet("UserRank/{userId}")]
-        public IActionResult UserRank([FromRoute] int userId, [FromQuery] GetUserRankRequest request)
+
+        [HttpGet("UserRank"), Authorize]
+        public IActionResult UserRank([FromQuery] GetUserRankRequest request)
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.UserRank(userId,request));
+        }
+
+        [HttpPost("Event")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult CreateEvent([FromBody] CreateEventRequest request)
+        {
+            service.CreateEvent(request);
+            return Ok();
+        }
+
+        [HttpPut("Event/{eventId}")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult UpdateEvent([FromRoute] int eventId, [FromBody] UpdateEventRequest request)
+        {
+            service.UpdateEvent(eventId, request);
+            return Ok();
         }
     }
 }

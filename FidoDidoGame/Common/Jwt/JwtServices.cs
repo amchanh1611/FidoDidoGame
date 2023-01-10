@@ -34,7 +34,11 @@ public class JwtServices : IJwtServices
             Issuer = appSettings.Jwt.Issuer,
             Subject = new ClaimsIdentity 
             ( 
-                new[] { new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) }
+                new[] 
+                { 
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Role, user.Role!.Name)
+                }
             ),
             Expires = DateTime.UtcNow.AddHours(2),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

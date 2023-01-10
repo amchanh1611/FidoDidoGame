@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FidoDidoGame.Common.Extensions;
 using FidoDidoGame.Common.Pagination;
+using FidoDidoGame.Modules.Rank.Entities;
 using FidoDidoGame.Modules.Rank.Request;
 using FidoDidoGame.Modules.Rank.Response;
 using FidoDidoGame.Modules.Ranks.Entities;
@@ -17,15 +18,17 @@ namespace FidoDidoGame.Modules.Ranks.Services
         void CreatePointDetail(CreatePointDetailRequest request);
         void UpdateRank(UpdateRank request);
         PaggingResponse<RankingResponse> Ranking(GetRankRequest request);
-        PaggingResponse<UserRankDetailIn> HistoryOf(int userId, HistoryOfRequest request);
-        UserRankReponse UserRank(int userId, GetUserRankRequest request);
+        PaggingResponse<UserRankDetailIn> HistoryOf(long userId, HistoryOfRequest request);
+        UserRankReponse UserRank(long userId, GetUserRankRequest request);
+        void CreateEvent(CreateEventRequest request);
+        void UpdateEvent(int eventId, UpdateEventRequest request);
+        void CreatePointOfRound(CreatePointOfRoundRequest request);
+        List<Event> GetEvent();
     }
     public class RankService : IRankService
     {
         public const string KeysRankOfDay = "Rank";
         public const string KeyRankDetail = "History";
-
-
 
         private readonly IRedisService redis;
         private readonly IRepository repository;
@@ -38,46 +41,52 @@ namespace FidoDidoGame.Modules.Ranks.Services
             this.mapper = mapper;
         }
 
-        private void CreatePointOfDay(CreatePointOfDayRequest request)
+        public void CreatePointOfRound(CreatePointOfRoundRequest request)
         {
-            PointOfDay pointOfDay = repository.PointOfDay.Create(mapper.Map<CreatePointOfDayRequest, PointOfDay>(request));
+            PointOfRound pointOfRound = repository.PointOfRound.Create(mapper.Map<CreatePointOfRoundRequest, PointOfRound>(request));
             repository.Save();
 
-            UserRankOfDayIn userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.UserId);
-            redis.ZSSet(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
-        }
+            UserRankOfRoundIn userRankOfRoundIn = new((long)(Helper.DateStatic - pointOfRound.Date).TotalMilliseconds,
+                request.UserName!, pointOfRound.Point, pointOfRound.UserId);
 
+            redis.ZSSet($"{KeysRankOfDay}:Round:{request.EventId}", pointOfRound.Point, userRankOfRoundIn);
+        }
 
         public void UpdateRank(UpdateRank request)
         {
-            PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.UserId == request.UserId && x.Date.Date == request.Date.Date).FirstOrDefault()!;
+            PointOfRound pointOfRound = repository.PointOfRound.FindByCondition(x => x.UserId == request.UserId && x.EventId == request.EventId).FirstOrDefault()!;
 
-            if (pointOfDay is null)
-                CreatePointOfDay(mapper.Map<UpdateRank, CreatePointOfDayRequest>(request));
+            if (pointOfRound is null)
+                CreatePointOfRound(mapper.Map<UpdateRank, CreatePointOfRoundRequest>(request));
             else
-                UpdatePointOfDay(pointOfDay.Id, mapper.Map<UpdateRank, UpdatePointOfDayRequest>(request));
+                UpdatePointOfRound(pointOfRound.Id, mapper.Map<UpdateRank, UpdatePointOfRoundRequest>(request));
         }
 
-        private void UpdatePointOfDay(int pointOfDayId, UpdatePointOfDayRequest request)
+        private void UpdatePointOfRound(int pointOfRoundId, UpdatePointOfRoundRequest request)
         {
-            PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.Id == pointOfDayId).FirstOrDefault()!;
+            PointOfRound pointOfRound = repository.PointOfRound.FindByCondition(x => x.Id == pointOfRoundId).FirstOrDefault()!;
+
+            //Tạo key cho 1 Round
+            string key = $"{KeysRankOfDay}:Round:{request.EventId}";
 
             //Remove old member in sortset in Redis if PointOfDay already exist
-            UserRankOfDayIn userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point, pointOfDay.UserId);
+            UserRankOfRoundIn userRankOfRoundIn = new((long)(Helper.DateStatic - pointOfRound.Date).TotalMilliseconds,
+                request.UserName!, pointOfRound.Point, pointOfRound.UserId);
 
-            redis.ZSDelete(KeysRankOfDay, userRankOfDayIn);
+            redis.ZSDelete(key, userRankOfRoundIn);
 
             //Update point in MySql 
-            pointOfDay.Point += request.Point;
-            pointOfDay.Date = request.Date;
-            pointOfDay = repository.PointOfDay.Update(pointOfDay);
+            pointOfRound.Point += request.Point;
+            pointOfRound.Date = request.Date;
+            pointOfRound = repository.PointOfRound.Update(pointOfRound);
 
             repository.Save();
 
             //Update new member in sortset in Redis
-            userRankOfDayIn = new((long)(Helper.DateStatic - pointOfDay.Date).TotalMilliseconds, request.UserName!, pointOfDay.Point,pointOfDay.UserId);
+            userRankOfRoundIn = new((long)(Helper.DateStatic - pointOfRound.Date).TotalMilliseconds,
+                request.UserName!, pointOfRound.Point, pointOfRound.UserId);
 
-            redis.ZSIncre(KeysRankOfDay, pointOfDay.Point, userRankOfDayIn);
+            redis.ZSIncre(key, pointOfRound.Point, userRankOfRoundIn);
         }
 
         public void CreatePointDetail(CreatePointDetailRequest request)
@@ -93,18 +102,12 @@ namespace FidoDidoGame.Modules.Ranks.Services
 
         public PaggingResponse<RankingResponse> Ranking(GetRankRequest request)
         {
-            List<UserRankOfDayIn> values = redis.ZSGet<UserRankOfDayIn>(KeysRankOfDay);
+            List<UserRankOfRoundIn> values = redis.ZSGet<UserRankOfRoundIn>($"{KeysRankOfDay}:Round:{request.EventId}");
 
-            return mapper.Map<List<UserRankOfDayIn>, List<RankingResponse>>(values)
-                .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd)
-                .GroupBy(key => key.UserName)
-                .Select(grp => new RankingResponse { UserName = grp.Key, Point = grp.Sum(x => x.Point), Date = grp.Select(x => x.Date).LastOrDefault() })
-                .OrderByDescending(x => x.Point).ThenBy(x => x.Date)
-                .AsQueryable()
-                .ApplyPagging(request.Current, request.PageSize);
+            return mapper.Map<List<UserRankOfRoundIn>, List<RankingResponse>>(values).AsQueryable().ApplyPagging(request.Current, request.PageSize);
         }
 
-        public PaggingResponse<UserRankDetailIn> HistoryOf(int userId, HistoryOfRequest request)
+        public PaggingResponse<UserRankDetailIn> HistoryOf(long userId, HistoryOfRequest request)
         {
             //Convert DateTime to timestamp 
             /// <Sumary>
@@ -120,19 +123,31 @@ namespace FidoDidoGame.Modules.Ranks.Services
             return redis.ZSGetByScores<UserRankDetailIn>($"{KeyRankDetail}:User:{userId}", dateEnd, dateStart).AsQueryable()
                 .ApplyPagging(request.Current, request.PageSize);
         }
-        public UserRankReponse UserRank(int userId, GetUserRankRequest request)
+        public UserRankReponse UserRank(long userId, GetUserRankRequest request)
         {
-            PointOfDay pointOfDay = repository.PointOfDay.FindByCondition(x => x.UserId == userId).Include(x => x.User).FirstOrDefault()!;
-            List<UserRankOfDayIn> values = redis.ZSGet<UserRankOfDayIn>(KeysRankOfDay);
+            PointOfRound pointOfDay = repository.PointOfRound.FindByCondition(x => x.UserId == userId && x.EventId == request.EventId).Include(x => x.User).FirstOrDefault()!;
 
-            List<RankingResponse> rank = mapper.Map<List<UserRankOfDayIn>, List<RankingResponse>>(values)
-                .Where(x => x.Date >= request.DateStart && x.Date <= request.DateEnd)
-                .GroupBy(key => key.UserName)
-                .Select(grp => new RankingResponse { UserName = grp.Key, Point = grp.Sum(x => x.Point), Date = grp.Select(x => x.Date).LastOrDefault() })
-                .OrderByDescending(x => x.Point).ThenBy(x => x.Date).ToList();
+            UserRankOfRoundIn userRankOfRoundIn = new((long)Helper.DateStatic.Subtract(pointOfDay.Date).TotalMilliseconds, pointOfDay.User!.Name, pointOfDay.Point, pointOfDay.UserId);
 
-            RankingResponse rankingOfUser =  rank.Where(x => x.UserName == pointOfDay.User!.Name).FirstOrDefault()!;
-            return new UserRankReponse(rank.IndexOf(rankingOfUser) + 1, rankingOfUser)!;
+            long? rankOfUser = redis.ZsGetRank($"{KeysRankOfDay}:Round:{request.EventId}", userRankOfRoundIn) + 1;
+            return new UserRankReponse(rankOfUser, mapper.Map<UserRankOfRoundIn, RankingResponse>(userRankOfRoundIn));
+        }
+        public void CreateEvent(CreateEventRequest request)
+        {
+            repository.Event.Create(mapper.Map<CreateEventRequest, Event>(request));
+            repository.Save();
+        }
+        public void UpdateEvent(int eventId, UpdateEventRequest request)
+        {
+            Event entity = repository.Event.FindByCondition(x => x.Id == eventId).FirstOrDefault()!;
+
+            repository.Event.Update(mapper.Map(request, entity));
+            repository.Save();
+        }
+
+        public List<Event> GetEvent()
+        {
+            return repository.Event.FindAll().ToList();
         }
     }
 }

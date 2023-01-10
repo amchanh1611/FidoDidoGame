@@ -1,6 +1,8 @@
 ﻿using FidoDidoGame.Modules.FidoDidos.Request;
 using FidoDidoGame.Modules.FidoDidos.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FidoDidoGame.Controllers
 {
@@ -14,37 +16,46 @@ namespace FidoDidoGame.Controllers
         {
             this.service = service;
         }
+
         [HttpPost("Fido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateFido([FromBody] CreateFidoRequest request)
         {
             service.CreateFido(request);
             return Ok();
         }
+
         [HttpPost("Dido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateDido([FromBody] List<string> didoNames)
         {
             service.CreateMultiDido(didoNames);
             return Ok();
         }
+
         [HttpPost("FidoDido")]
+        [Authorize(Roles = "Admin")]
         public IActionResult CreateFidoDido([FromBody] CreateFidoDidoRequest request)
         {
             service.CreateFidoDido(request);
             return Ok();
         }
-        [HttpGet("Fido/{userId}")]
-        public IActionResult Fido([FromRoute] int userId)
+        [HttpGet("Fido"), Authorize]
+        public IActionResult Fido()
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.Fido(userId));
         }
 
-        [HttpGet("Dido/{userId}")]
-        public IActionResult Dido([FromRoute] int userId)
+        [HttpGet("Dido"), Authorize]
+        public IActionResult Dido()
         {
+            long userId = long.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             return Ok(service.Dido(userId));
         }
 
         [HttpPut("Fido/{fidoId}/Percent")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateFidoPercent([FromRoute] int fidoId, UpdateFidoPercentRequest request)
         {
             service.UpdateFidoPercent(fidoId, request);

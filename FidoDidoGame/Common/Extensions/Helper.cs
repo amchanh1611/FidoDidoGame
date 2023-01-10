@@ -4,7 +4,7 @@ namespace FidoDidoGame.Common.Extensions
 {
     public static class Helper
     {
-        public static DateTime DateStatic = new DateTime(2100, 12, 31, 23, 59, 59);
+        public static readonly DateTime DateStatic = new DateTime(2100, 12, 31, 23, 59, 59);
         public static async Task<string> UploadFilesAsync(this IFormFile file, string path)
         {
 
