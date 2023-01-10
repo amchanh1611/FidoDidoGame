@@ -52,7 +52,6 @@ namespace FidoDidoGame.Modules.Ranks.Services
             redis.ZSSet($"{KeysRankOfDay}:Round:{request.EventId}", pointOfRound.Point, userRankOfRoundIn);
         }
 
-
         public void UpdateRank(UpdateRank request)
         {
             PointOfRound pointOfRound = repository.PointOfRound.FindByCondition(x => x.UserId == request.UserId && x.EventId == request.EventId).FirstOrDefault()!;
