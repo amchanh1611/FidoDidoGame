@@ -136,15 +136,13 @@ public class UserService : IUserService
             if (rank[i].Point == 0)
                 continue;
 
-            Award award = Award.Consolation;
-
-            switch (i)
+            Award award = i switch
             {
-                case 0: award = Award.First; break;
-                case 1: award = Award.Second; break;
-                case 2: award = Award.Third; break;
-                default: break;
-            }
+                0 => Award.First,
+                1 => Award.Second,
+                2 => Award.Third,
+                _ => Award.Consolation
+            };
 
             CreateReward(new CreateRewardRequest(rank[i].UserId, award, round.DateStart, round.DateEnd));
         }
